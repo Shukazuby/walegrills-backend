@@ -1,8 +1,7 @@
 {
-  "name": "create-nodejs-express-app",
+  "name": "walegrills",
   "version": "1.7.0",
-  "description": "Create a Node.js app for building production-ready RESTful APIs using Express, by running one command",
-  "bin": "bin/createNodejsApp.js",
+  "description": "",
   "main": "src/index.js",
   "author": "Shukazuby",
   "license": "MIT",
@@ -12,27 +11,7 @@
   "scripts": {
     "start": "nodemon ."
   },
-  "keywords": [
-    "node",
-    "node.js",
-    "boilerplate",
-    "generator",
-    "express",
-    "rest",
-    "api",
-    "sequelize",
-    "es6",
-    "es7",
-    "es8",
-    "es9",
-    "jest",
-    "travis",
-    "docker",
-    "passport",
-    "joi",
-    "eslint",
-    "prettier"
-  ],
+  "keywords": [  ],
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.36.4",
