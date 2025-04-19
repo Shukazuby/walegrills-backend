@@ -6,6 +6,8 @@ import { ProductModule } from './product/product.module';
 import * as dotenv from 'dotenv';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
+import { PlanModule } from './plan/plan.module';
+import { FoodboxModule } from './foodbox/foodbox.module';
 dotenv.config();
 @Module({
   imports: [
@@ -13,6 +15,8 @@ dotenv.config();
     BookingModule,
     ProductModule,
     UsersModule,
+    PlanModule,
+    FoodboxModule,
   ],
   controllers: [AppController],
   providers: [AppService],

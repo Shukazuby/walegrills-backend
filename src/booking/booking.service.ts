@@ -191,6 +191,7 @@ export class BookingService {
         itemsTotal,
       });
 
+      booking.sessionId= session.id
       await booking.save();
 
       const user = await this.userModel.findOne({ email });

@@ -1,0 +1,210 @@
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { CreateFoodboxDto } from './dto/create-foodbox.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Foodbox } from './entities/foodbox.entity';
+import { Product } from 'src/product/entities/product.entity';
+import { Model } from 'mongoose';
+import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
+import { BaseResponseTypeDTO, IPaginationFilter } from 'src/utils';
+import { Plan } from 'src/plan/entities/plan.entity';
+import { PlanService } from 'src/plan/plan.service';
+
+@Injectable()
+export class FoodboxService {
+  constructor(
+    @InjectModel(Foodbox.name) private readonly foodboxModel: Model<Foodbox>,
+    @InjectModel(Product.name) private readonly productModel: Model<Product>,
+    @InjectModel(Plan.name) private readonly planModel: Model<Plan>,
+
+    private readonly userSrv: UsersService,
+    private readonly planSrv: PlanService
+  ) {}
+
+  async createFoodbox(dto: CreateFoodboxDto): Promise<BaseResponseTypeDTO> {
+    const email = dto.email.toLowerCase();
+    const plan = await this.planModel.findById(dto.planId);
+    if (!plan) {
+      throw new NotFoundException('Plan not found');
+    }
+
+     await this.userSrv.createUser({
+      name: dto.name,
+      email,
+      phoneNumber: dto.phoneNumber
+    })
+
+    const foodbox= new this.foodboxModel({...dto})
+    await foodbox.save()
+
+   const buyPlan = await this.planSrv.buyPlan(dto.planId)
+   foodbox.sessionId = buyPlan.stripePaymentId
+
+
+    return {
+      data: {
+        paymentLink: buyPlan.paymentLink,
+        foodbox
+      },
+      success: true,
+      code: HttpStatus.CREATED,
+      message: 'Food Box Created',
+    };
+  }
+
+  async findAllFoodBox(
+    filters: IPaginationFilter,
+  ): Promise<BaseResponseTypeDTO> {
+    try {
+      const searchFilter: any = {};
+      if (filters.search) {
+        const searchTerm = filters.search.trim();
+        const userFields = Object.keys(this.foodboxModel.schema.obj);
+
+        searchFilter.$or = userFields
+          .map((field) => {
+            const fieldType = this.foodboxModel.schema.obj[field]?.type;
+            if (fieldType === String) {
+              return {
+                [field]: { $regex: searchTerm, $options: 'i' },
+              };
+            }
+            return {};
+          })
+          .filter((condition) => Object.keys(condition).length > 0);
+      }
+
+      const limit = filters.limit || 100;
+      const page = filters.page || 1;
+      const skip = (page - 1) * limit;
+
+      const totalCount = await this.foodboxModel.countDocuments(searchFilter);
+
+      const data = await this.foodboxModel
+        .find(searchFilter)
+        .skip(skip)
+        .limit(limit)
+        .populate([{ path: 'planId' }, { path: 'itemsNeeded.productId', model: 'Product' }])
+        .sort({ createdAt: -1 });
+
+      if (!data || data.length === 0) {
+        return {
+          data: [],
+          success: true,
+          code: HttpStatus.OK,
+          message: 'FoodBox Not Found',
+          limit,
+          page,
+          search: filters?.search,
+        };
+      }
+
+      return {
+        data: {
+          totalCount,
+          data,
+        },
+        success: true,
+        code: HttpStatus.OK,
+        message: 'All FoodBox Found',
+        limit: filters.limit,
+        page: filters.page,
+        search: filters.search,
+      };
+    } catch (ex) {
+      throw ex;
+    }
+  }
+
+  async findFoodboxByUser(
+    filters: IPaginationFilter,
+    email?: string,
+  ): Promise<BaseResponseTypeDTO> {
+    try {
+      const searchFilter: any = {};
+
+      // Search across string fields
+      if (filters.search) {
+        const searchTerm = filters.search.trim();
+        const userFields = Object.keys(this.foodboxModel.schema.obj);
+
+        searchFilter.$or = userFields
+          .map((field) => {
+            const fieldType = this.foodboxModel.schema.obj[field]?.type;
+            if (fieldType === String) {
+              return {
+                [field]: { $regex: searchTerm, $options: 'i' },
+              };
+            }
+            return {};
+          })
+          .filter((condition) => Object.keys(condition).length > 0);
+      }
+
+      // Filter by email if provided
+      if (email) {
+        searchFilter.email = email;
+      }
+
+      const limit = filters.limit || 100;
+      const page = filters.page || 1;
+      const skip = (page - 1) * limit;
+
+      const totalCount = await this.foodboxModel.countDocuments(searchFilter);
+
+      const data = await this.foodboxModel
+        .find(searchFilter)
+        .skip(skip)
+        .limit(limit)
+        .populate([{ path: 'planId' }, { path: 'itemsNeeded.productId', model: 'Product' }])
+        .sort({ createdAt: -1 });
+
+      if (!data || data.length === 0) {
+        return {
+          data: [],
+          success: true,
+          code: HttpStatus.OK,
+          message: 'No Foodbox Found',
+          limit,
+          page,
+          search: filters?.search,
+        };
+      }
+
+      return {
+        data: {
+          totalCount,
+          data,
+        },
+        success: true,
+        code: HttpStatus.OK,
+        message: 'All Foodboxes Found',
+        limit,
+        page,
+        search: filters.search,
+      };
+    } catch (ex) {
+      throw ex;
+    }
+  }
+
+  async getAFoodBox(boxId: string): Promise<BaseResponseTypeDTO> {
+    try {
+      const foodbox = await this.foodboxModel.findOne({ _id: boxId }).populate('planId');
+
+      if (!foodbox) {
+        throw new NotFoundException(`Foodbox not found.`);
+      }
+
+      return {
+        data: foodbox,
+        success: true,
+        code: HttpStatus.OK,
+        message: 'Foodbox Fetched',
+      };
+    } catch (ex) {
+      throw ex;
+    }
+  }
+
+}

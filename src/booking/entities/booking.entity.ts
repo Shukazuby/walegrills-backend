@@ -67,6 +67,9 @@ export class Booking {
   eventType?: string;
 
   @Prop()
+  sessionId?: string;
+
+  @Prop()
   itemsNeeded: Items[];
 
   @Prop()

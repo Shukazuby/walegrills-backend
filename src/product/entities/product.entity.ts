@@ -19,6 +19,9 @@ export class Product {
   @Prop()
   category?: string;
 
+  @Prop()
+  imageurl?: string;
+
   @Prop({default: ProductTypes.GENERAL})
   productType?: ProductTypes;
 

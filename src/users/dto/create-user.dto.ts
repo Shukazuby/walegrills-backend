@@ -3,7 +3,7 @@ import { IsEmail, IsString } from "class-validator"
 export class CreateUserDto {
 
 @IsString()
-prefix:string
+prefix?:string
 
 @IsString()
 name:string

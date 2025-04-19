@@ -14,6 +14,9 @@ export class CreateProductDto {
   @ApiProperty({ example: 'Main' })
   category?: string;
 
+  @ApiProperty({ example: 'https://cloudinary.com/image' })
+  imageUrl?: string;
+
   @ApiProperty({ default: ProductTypes.GENERAL })
   productType?: ProductTypes;
 }
