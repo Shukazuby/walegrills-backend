@@ -52,6 +52,9 @@ export class Booking {
   serviceTime: number;
 
   @Prop()
+  invoiceNumber?: number;
+
+  @Prop()
   eventStyle?: string;
 
   @Prop()
@@ -71,6 +74,10 @@ export class Booking {
 
   @Prop()
   distance: number;
+
+  @Prop({ ref: 'User' })
+  userId: string;
+
 
   @Prop({ default: PaymentOptionss.HUNDRED })
   paymentOption: PaymentOptionss;

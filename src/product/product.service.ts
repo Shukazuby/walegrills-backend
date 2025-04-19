@@ -62,7 +62,7 @@ export class ProductService {
           data: [],
           success: true,
           code: HttpStatus.OK,
-          message: 'Users Not Found',
+          message: 'Products Not Found',
           limit,
           page,
           search: filters?.search,
@@ -173,7 +173,7 @@ export class ProductService {
         data: product,
         success: true,
         code: HttpStatus.OK,
-        message: 'Account Fetched',
+        message: 'Product Fetched',
       };
     } catch (ex) {
       throw ex;
@@ -219,7 +219,7 @@ export class ProductService {
         data: updatedProduct,
         success: true,
         code: HttpStatus.OK,
-        message: 'Account Updated',
+        message: 'Product Updated',
       };
     } catch (ex) {
       throw ex;
@@ -239,7 +239,7 @@ export class ProductService {
       return {
         success: true,
         code: HttpStatus.OK,
-        message: 'Account Deleted',
+        message: 'Product Deleted',
       };
     } catch (ex) {
       throw ex;

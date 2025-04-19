@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import axios from 'axios';
 import Stripe from 'stripe';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -7,7 +7,11 @@ import * as dotenv from 'dotenv';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Product } from 'src/product/entities/product.entity';
-import { BaseResponseTypeDTO } from 'src/utils';
+import {
+  BaseResponseTypeDTO,
+  generateUniqueKey,
+  IPaginationFilter,
+} from 'src/utils';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 
@@ -175,11 +179,13 @@ export class BookingService {
         cancel_url: 'https://your-domain.com/cancel',
       });
 
+      const invoiceNo = await generateUniqueKey(7);
       // Save to DB
       const booking = new this.bookingModel({
         ...dto,
         email,
         totalFee,
+        invoiceNumber: invoiceNo,
         distance: distance.distance,
         eventDate: new Date(dto.eventDate),
         itemsTotal,
@@ -187,9 +193,14 @@ export class BookingService {
 
       await booking.save();
 
+      const user = await this.userModel.findOne({ email });
+      if (user) {
+        booking.userId = user._id.toString();
+        await booking.save();
+      }
+
       // const email = dto.email.toLowerCase();
       // const user = await this.userModel.findOne({ email });
-
       // if (user) {
       //   user.numberOfBookings = (user.numberOfBookings || 0) + 1;
       //   await user.save();
@@ -208,6 +219,161 @@ export class BookingService {
     } catch (error) {
       console.error('Booking creation failed:', error);
       throw new Error('Failed to create booking');
+    }
+  }
+
+  async findAllBookings(
+    filters: IPaginationFilter,
+  ): Promise<BaseResponseTypeDTO> {
+    try {
+      const searchFilter: any = {};
+      if (filters.search) {
+        const searchTerm = filters.search.trim();
+        const userFields = Object.keys(this.bookingModel.schema.obj);
+
+        searchFilter.$or = userFields
+          .map((field) => {
+            const fieldType = this.bookingModel.schema.obj[field]?.type;
+            if (fieldType === String) {
+              return {
+                [field]: { $regex: searchTerm, $options: 'i' },
+              };
+            }
+            return {};
+          })
+          .filter((condition) => Object.keys(condition).length > 0);
+      }
+
+      const limit = filters.limit || 100;
+      const page = filters.page || 1;
+      const skip = (page - 1) * limit;
+
+      const totalCount = await this.bookingModel.countDocuments(searchFilter);
+
+      const data = await this.bookingModel
+        .find(searchFilter)
+        .skip(skip)
+        .limit(limit)
+        .populate([{ path: 'userId' }, { path: 'itemsNeeded.productId', model: 'Product' }])
+        .sort({ createdAt: -1 });
+
+      if (!data || data.length === 0) {
+        return {
+          data: [],
+          success: true,
+          code: HttpStatus.OK,
+          message: 'Bookings Not Found',
+          limit,
+          page,
+          search: filters?.search,
+        };
+      }
+
+      return {
+        data: {
+          totalCount,
+          data,
+        },
+        success: true,
+        code: HttpStatus.OK,
+        message: 'All Bookings Found',
+        limit: filters.limit,
+        page: filters.page,
+        search: filters.search,
+      };
+    } catch (ex) {
+      throw ex;
+    }
+  }
+
+  async findBookingsByUser(
+    filters: IPaginationFilter,
+    email?: string,
+  ): Promise<BaseResponseTypeDTO> {
+    try {
+      const searchFilter: any = {};
+
+      // Search across string fields
+      if (filters.search) {
+        const searchTerm = filters.search.trim();
+        const userFields = Object.keys(this.bookingModel.schema.obj);
+
+        searchFilter.$or = userFields
+          .map((field) => {
+            const fieldType = this.bookingModel.schema.obj[field]?.type;
+            if (fieldType === String) {
+              return {
+                [field]: { $regex: searchTerm, $options: 'i' },
+              };
+            }
+            return {};
+          })
+          .filter((condition) => Object.keys(condition).length > 0);
+      }
+
+      // Filter by email if provided
+      if (email) {
+        searchFilter.email = email;
+      }
+
+      const limit = filters.limit || 100;
+      const page = filters.page || 1;
+      const skip = (page - 1) * limit;
+
+      const totalCount = await this.bookingModel.countDocuments(searchFilter);
+
+      const data = await this.bookingModel
+        .find(searchFilter)
+        .skip(skip)
+        .limit(limit)
+        .populate([{ path: 'userId' }, { path: 'itemsNeeded.productId', model: 'Product' }])
+        .sort({ createdAt: -1 });
+
+      if (!data || data.length === 0) {
+        return {
+          data: [],
+          success: true,
+          code: HttpStatus.OK,
+          message: 'Bookings Not Found',
+          limit,
+          page,
+          search: filters?.search,
+        };
+      }
+
+      return {
+        data: {
+          totalCount,
+          data,
+        },
+        success: true,
+        code: HttpStatus.OK,
+        message: 'All Bookings Found',
+        limit,
+        page,
+        search: filters.search,
+      };
+    } catch (ex) {
+      throw ex;
+    }
+  }
+
+  async getABooking(bookingId: string): Promise<BaseResponseTypeDTO> {
+    try {
+      const booking = await this.bookingModel.findOne({ _id: bookingId });
+
+      if (!booking) {
+        throw new NotFoundException(`Booking not found.`);
+      }
+
+      return {
+        data: booking,
+        success: true,
+        code: HttpStatus.OK,
+        message: 'Booking Fetched',
+      };
+    } catch (ex) {
+      throw ex;
     }
   }
 }
