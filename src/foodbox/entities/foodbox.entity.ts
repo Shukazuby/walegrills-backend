@@ -1,9 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Items } from 'src/booking/entities/booking.entity';
-export enum PaymentStatus {
-  PENDING = 'pending',
-  PAID = 'paid',
-}
+import { Items, PaymentStatus } from 'src/booking/entities/booking.entity';
 
 @Schema()
 export class Foodbox {
@@ -33,6 +29,9 @@ export class Foodbox {
 
   @Prop({ example: '9000000000' })
   phoneNumber: string;
+
+  @Prop()
+  cus_Id?: string;
 
   @Prop()
   deliveryAddress: string;

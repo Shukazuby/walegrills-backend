@@ -57,12 +57,6 @@ export enum CurrencyType {
   USD = 'USD',
 }
 
-export enum PaymentStatus {
-  SUCCESSFUL = 'SUCCESSFUL',
-  PENDING = 'PENDING',
-  FAILED = 'FAILED',
-}
-
 export enum FundRequestsatus {
   ACCEPTED = 'ACCEPTED',
   PENDING = 'PENDING',

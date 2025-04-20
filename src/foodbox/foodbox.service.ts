@@ -9,16 +9,16 @@ import { UsersService } from 'src/users/users.service';
 import { BaseResponseTypeDTO, IPaginationFilter } from 'src/utils';
 import { Plan } from 'src/plan/entities/plan.entity';
 import { PlanService } from 'src/plan/plan.service';
+import { PaymentStatus } from 'src/booking/entities/booking.entity';
 
 @Injectable()
 export class FoodboxService {
   constructor(
     @InjectModel(Foodbox.name) private readonly foodboxModel: Model<Foodbox>,
-    @InjectModel(Product.name) private readonly productModel: Model<Product>,
     @InjectModel(Plan.name) private readonly planModel: Model<Plan>,
 
     private readonly userSrv: UsersService,
-    private readonly planSrv: PlanService
+    private readonly planSrv: PlanService,
   ) {}
 
   async createFoodbox(dto: CreateFoodboxDto): Promise<BaseResponseTypeDTO> {
@@ -28,23 +28,22 @@ export class FoodboxService {
       throw new NotFoundException('Plan not found');
     }
 
-     await this.userSrv.createUser({
+    await this.userSrv.createUser({
       name: dto.name,
       email,
-      phoneNumber: dto.phoneNumber
-    })
+      phoneNumber: dto.phoneNumber,
+    });
 
-    const foodbox= new this.foodboxModel({...dto})
-    await foodbox.save()
+    const foodbox = new this.foodboxModel({ ...dto });
+    await foodbox.save();
 
-   const buyPlan = await this.planSrv.buyPlan(dto.planId)
-   foodbox.sessionId = buyPlan.stripePaymentId
-
+    const buyPlan = await this.planSrv.buyPlan(dto.planId);
+    foodbox.sessionId = buyPlan.stripePaymentId;
 
     return {
       data: {
         paymentLink: buyPlan.paymentLink,
-        foodbox
+        foodbox,
       },
       success: true,
       code: HttpStatus.CREATED,
@@ -84,7 +83,10 @@ export class FoodboxService {
         .find(searchFilter)
         .skip(skip)
         .limit(limit)
-        .populate([{ path: 'planId' }, { path: 'itemsNeeded.productId', model: 'Product' }])
+        .populate([
+          { path: 'planId' },
+          { path: 'itemsNeeded.productId', model: 'Product' },
+        ])
         .sort({ createdAt: -1 });
 
       if (!data || data.length === 0) {
@@ -156,7 +158,10 @@ export class FoodboxService {
         .find(searchFilter)
         .skip(skip)
         .limit(limit)
-        .populate([{ path: 'planId' }, { path: 'itemsNeeded.productId', model: 'Product' }])
+        .populate([
+          { path: 'planId' },
+          { path: 'itemsNeeded.productId', model: 'Product' },
+        ])
         .sort({ createdAt: -1 });
 
       if (!data || data.length === 0) {
@@ -190,7 +195,9 @@ export class FoodboxService {
 
   async getAFoodBox(boxId: string): Promise<BaseResponseTypeDTO> {
     try {
-      const foodbox = await this.foodboxModel.findOne({ _id: boxId }).populate('planId');
+      const foodbox = await this.foodboxModel
+        .findOne({ _id: boxId })
+        .populate('planId');
 
       if (!foodbox) {
         throw new NotFoundException(`Foodbox not found.`);
@@ -207,4 +214,11 @@ export class FoodboxService {
     }
   }
 
+  async markAsPaidFoodbox(sessionId: string) {
+    const foodbox = await this.foodboxModel.findOne({ sessionId });
+    if (foodbox) {
+      foodbox.paymentStatus = PaymentStatus.PAID;
+      await foodbox.save();
+    }
+  }
 }

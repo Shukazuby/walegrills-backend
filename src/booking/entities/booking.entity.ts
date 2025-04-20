@@ -81,12 +81,15 @@ export class Booking {
   @Prop({ ref: 'User' })
   userId: string;
 
+  @Prop()
+  cus_Id?: string;
+
 
   @Prop({ default: PaymentOptionss.HUNDRED })
   paymentOption: PaymentOptionss;
 
   @Prop({ default: PaymentStatus.PENDING })
-  paymentstatus?: PaymentStatus;
+  paymentStatus?: PaymentStatus;
 
   @Prop({ default: new Date() })
   createdAt: Date;

@@ -2,7 +2,7 @@ import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import axios from 'axios';
 import Stripe from 'stripe';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { Booking } from './entities/booking.entity';
+import { Booking, PaymentStatus } from './entities/booking.entity';
 import * as dotenv from 'dotenv';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -377,4 +377,14 @@ export class BookingService {
       throw ex;
     }
   }
+
+  async markAsPaidBooking(sessionId: string) {
+    const booking = await this.bookingModel.findOne({ sessionId });
+    if (booking) {
+      booking.paymentStatus = PaymentStatus.PAID;
+      await booking.save();
+
+    }
+  }
+    
 }
