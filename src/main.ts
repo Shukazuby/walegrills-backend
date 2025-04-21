@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import * as bodyParser from 'body-parser';
+import * as express from 'express';
 
 async function bootstrap() {
   const port = process.env.PORT ?? 5878;
@@ -27,6 +28,7 @@ async function bootstrap() {
   app.enableCors();
 
   app.use('/webhook', bodyParser.raw({ type: 'application/json' }));
+  app.use(express.json());
 }
 
 bootstrap();

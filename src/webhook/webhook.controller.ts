@@ -38,6 +38,9 @@ export class WebhookController {
 
     try {
       const rawBody = (req as any).rawBody;
+      if (!rawBody) {
+        console.error('❌ No raw body found in request');
+      }
       event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
     } catch (err) {
       console.error('Webhook signature verification failed.', err.message);
@@ -48,11 +51,11 @@ export class WebhookController {
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
-        console.log('E Reach hereeeeeeeeee')
+        console.log('E Reach hereeeeeeeeee');
         await this.bookingService.markAsPaidBooking(session.id);
         await this.foodboxService.markAsPaidFoodbox(session.id);
 
-        console.log('2222222222222 E Reach hereeeeeeeeee')
+        console.log('2222222222222 E Reach hereeeeeeeeee');
         break;
       // Add more event types if needed
       default:
