@@ -7,9 +7,9 @@ import { User } from './entities/user.entity';
 import { BaseResponseTypeDTO, IPaginationFilter } from 'src/utils';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET, {
-  apiVersion: '2025-03-31.basil',
-});
+// const stripe = new Stripe(process.env.STRIPE_SECRET, {
+//   apiVersion: '2025-03-31.basil',
+// });
 
 @Injectable()
 export class UsersService {
@@ -122,35 +122,35 @@ export class UsersService {
     }
   }
 
-  async registerUserWithStripe(dto: CreateUserDto) {
-    const email = dto.email.toLowerCase();
+  // async registerUserWithStripe(dto: CreateUserDto) {
+  //   const email = dto.email.toLowerCase();
   
-    let user = await this.userModel.findOne({ email });
+  //   let user = await this.userModel.findOne({ email });
   
-    if (!user) {
-      user = await this.createUser(dto); // ✅ Now this returns a user
-    }
+  //   if (!user) {
+  //     user = await this.createUser(dto); // ✅ Now this returns a user
+  //   }
   
-    const userId = user._id.toString();
+  //   const userId = user._id.toString();
   
-    const existingStripeCustomer = await stripe.customers.list({
-      email,
-      limit: 1,
-    });
+  //   const existingStripeCustomer = await stripe.customers.list({
+  //     email,
+  //     limit: 1,
+  //   });
   
-    if (existingStripeCustomer.data.length > 0) {
-      return existingStripeCustomer.data[0];
-    }
+  //   if (existingStripeCustomer.data.length > 0) {
+  //     return existingStripeCustomer.data[0];
+  //   }
   
-    const newCustomer = await stripe.customers.create({
-      email,
-      name: dto.name,
-      phone: dto.phoneNumber,
-      metadata: {
-        appUserId: userId,
-      },
-    });
+  //   const newCustomer = await stripe.customers.create({
+  //     email,
+  //     name: dto.name,
+  //     phone: dto.phoneNumber,
+  //     metadata: {
+  //       appUserId: userId,
+  //     },
+  //   });
   
-    return newCustomer;
-  }
+  //   return newCustomer;
+  // }
 }

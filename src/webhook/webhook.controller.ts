@@ -12,7 +12,8 @@ import { Response, Request } from 'express';
 import { BookingService } from 'src/booking/booking.service';
 import { FoodboxService } from 'src/foodbox/foodbox.service';
 import Stripe from 'stripe';
-
+import * as dotenv from 'dotenv';
+dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_SECRET, {
   apiVersion: '2025-03-31.basil',
 });
