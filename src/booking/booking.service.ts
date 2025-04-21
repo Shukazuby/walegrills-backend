@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import axios from 'axios';
 import Stripe from 'stripe';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -36,34 +36,38 @@ export class BookingService {
   async calculateDistance(
     destination: string,
   ): Promise<{ distance: number; duration: number }> {
-    const url = `https://maps.googleapis.com/maps/api/distancematrix/json`;
 
-    const res = await axios.get(url, {
-      params: {
-        origins: origin, // make sure 'origin' is defined in your context
-        destinations: destination,
-        key: process.env.GOOGLE_API_KEY,
-      },
-    });
+    try {
+      const url = `https://maps.googleapis.com/maps/api/distancematrix/json`;
 
-    const element = res.data.rows[0].elements[0];
-
-    if (element.status !== 'OK') {
-      throw new Error(
-        `Could not retrieve distance/duration from Google Maps API`,
-      );
+      const res = await axios.get(url, {
+        params: {
+          origins: origin, // make sure 'origin' is defined in your context
+          destinations: destination,
+          key: process.env.GOOGLE_API_KEY,
+        },
+      });
+  
+      const element = res.data.rows[0].elements[0];
+  
+      if (element.status !== 'OK') {
+        throw new BadRequestException(`Could not retrieve distance/duration. Please confirm event venue` );
+      }
+  
+      const distanceInMeters = element.distance.value; // meters
+      const durationInSeconds = element.duration.value; // seconds
+  
+      const distanceInMiles = distanceInMeters / 1609.34;
+      const durationInHours = durationInSeconds / 3600;
+  
+      return {
+        distance: distanceInMiles,
+        duration: durationInHours,
+      };
+  
+    } catch (error) {
+      throw error
     }
-
-    const distanceInMeters = element.distance.value; // meters
-    const durationInSeconds = element.duration.value; // seconds
-
-    const distanceInMiles = distanceInMeters / 1609.34;
-    const durationInHours = durationInSeconds / 3600;
-
-    return {
-      distance: distanceInMiles,
-      duration: durationInHours,
-    };
   }
 
   async createBooking(dto: CreateBookingDto): Promise<BaseResponseTypeDTO> {
@@ -221,7 +225,8 @@ export class BookingService {
       };
     } catch (error) {
       console.error('Booking creation failed:', error);
-      throw new Error('Failed to create booking');
+      // throw new Error('Failed to create booking');
+      throw error
     }
   }
 
