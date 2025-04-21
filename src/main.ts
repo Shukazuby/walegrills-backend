@@ -1,15 +1,25 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const port = process.env.PORT ?? 5878;
   const app = await NestFactory.create(AppModule, { cors: { origin: '*' } });
 
+  // Enable CORS
+  app.enableCors();
+
+  // Stripe webhook needs raw body
+  app.use('/webhook', bodyParser.raw({ type: 'application/json' }));
+
+  // Other routes use JSON parser
+  app.use(bodyParser.json());
+
+  // Swagger setup
   const config = new DocumentBuilder()
     .setTitle('Wale Grills API')
-    .setDescription(`The API for Wale Grills`)
+    .setDescription('The API for Wale Grills')
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -21,14 +31,11 @@ async function bootstrap() {
       'JWT',
     )
     .build();
-  const document: OpenAPIObject = SwaggerModule.createDocument(app, config);
+
+  const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
-  await app.listen(port);
-  app.enableCors();
 
-  app.use('/webhook', bodyParser.raw({ type: 'application/json' }));
-
-  app.use(bodyParser.json());
+  // Only listen once!
   await app.listen(port);
 }
 
