@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { UserPrefix } from '../dto/create-booking.dto';
 
 export enum PaymentOptionss {
   FOUTRY = '40',
@@ -9,7 +10,7 @@ export enum PaymentOptionss {
 
 export enum PaymentStatus {
   PENDING = 'pending',
-  PAID = 'pain',
+  PAID = 'paid',
   FAILED = 'failed',
   REFUNDED = 'refunded',
 }
@@ -33,11 +34,11 @@ export class Items {
 @Schema()
 export class Booking {
   @Prop()
-  prefix: string;
+  prefix: UserPrefix;
 
   @Prop()
   name: string;
-  
+
   @Prop()
   @IsEmail()
   email: string;
@@ -83,7 +84,6 @@ export class Booking {
 
   @Prop()
   cus_Id?: string;
-
 
   @Prop({ default: PaymentOptionss.HUNDRED })
   paymentOption: PaymentOptionss;

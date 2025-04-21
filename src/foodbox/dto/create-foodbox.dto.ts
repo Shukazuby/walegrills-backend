@@ -1,7 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { UserPrefix } from 'src/booking/dto/create-booking.dto';
 import { Items } from 'src/booking/entities/booking.entity';
 
 export class CreateFoodboxDto {
+  @ApiProperty({ example: 'Mrs' })
+  prefix: UserPrefix;
+
   @ApiProperty({ example: 'John' })
   name: string;
 

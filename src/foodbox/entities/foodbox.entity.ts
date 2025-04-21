@@ -1,8 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { UserPrefix } from 'src/booking/dto/create-booking.dto';
 import { Items, PaymentStatus } from 'src/booking/entities/booking.entity';
 
 @Schema()
 export class Foodbox {
+  @Prop()
+  prefix: UserPrefix;
+
   @Prop()
   name: string;
 
