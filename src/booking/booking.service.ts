@@ -379,7 +379,7 @@ export class BookingService {
   }
 
   async markAsPaidBooking(sessionId: string) {
-    const booking = await this.bookingModel.findOne({ sessionId });
+    const booking = await this.bookingModel.findOne({ sessionId: sessionId });
     if (booking) {
       booking.paymentStatus = PaymentStatus.PAID;
       await booking.save();

@@ -48,12 +48,12 @@ export class WebhookController {
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
-
+        console.log('E Reach hereeeeeeeeee')
         await this.bookingService.markAsPaidBooking(session.id);
         await this.foodboxService.markAsPaidFoodbox(session.id);
 
+        console.log('2222222222222 E Reach hereeeeeeeeee')
         break;
-
       // Add more event types if needed
       default:
         console.warn(`Unhandled event type ${event.type}`);
