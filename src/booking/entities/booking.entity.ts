@@ -4,8 +4,8 @@ import { IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { UserPrefix } from '../dto/create-booking.dto';
 
 export enum PaymentOptionss {
-  FOUTRY = '40',
-  HUNDRED = '100',
+  FOUTRY = 40,
+  HUNDRED = 100,
 }
 
 export enum PaymentStatus {
@@ -75,6 +75,9 @@ export class Booking {
 
   @Prop()
   totalFee: number;
+
+  @Prop()
+  amountToPay: number;
 
   @Prop()
   distance: number;

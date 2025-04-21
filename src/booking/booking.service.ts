@@ -152,11 +152,12 @@ export class BookingService {
       }
 
       // Calculate total fee
-      let totalFee =
+      const totalFee =
         chefCost + waiterCost + equipmentCost + transportation + itemsTotal;
 
-      if (dto.paymentOption === '40') {
-        totalFee = totalFee * 0.4;
+        let amountToPay= chefCost + waiterCost + equipmentCost + transportation + itemsTotal;
+      if (dto.paymentOption === 40) {
+        amountToPay = totalFee * 0.4;
       }
 
       // Stripe checkout
@@ -170,7 +171,7 @@ export class BookingService {
               product_data: {
                 name: 'Event Booking',
               },
-              unit_amount: Math.round(totalFee * 100),
+              unit_amount: Math.round(amountToPay * 100),
             },
             quantity: 1,
           },
@@ -185,6 +186,7 @@ export class BookingService {
         ...dto,
         email,
         totalFee,
+        amountToPay, 
         invoiceNumber: invoiceNo,
         distance: distance.distance,
         eventDate: new Date(dto.eventDate),
