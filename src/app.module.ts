@@ -8,6 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
 import { PlanModule } from './plan/plan.module';
 import { FoodboxModule } from './foodbox/foodbox.module';
+import { WebhookController } from './webhook/webhook.controller';
 dotenv.config();
 @Module({
   imports: [
@@ -18,7 +19,7 @@ dotenv.config();
     PlanModule,
     FoodboxModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, WebhookController],
   providers: [AppService],
 })
 export class AppModule {}
