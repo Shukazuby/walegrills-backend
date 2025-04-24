@@ -206,13 +206,6 @@ export class BookingService {
         await booking.save();
       }
 
-      // const email = dto.email.toLowerCase();
-      // const user = await this.userModel.findOne({ email });
-      // if (user) {
-      //   user.numberOfBookings = (user.numberOfBookings || 0) + 1;
-      //   await user.save();
-      // }
-
       return {
         data: {
           paymentLink: session.url,
@@ -225,7 +218,6 @@ export class BookingService {
       };
     } catch (error) {
       console.error('Booking creation failed:', error);
-      // throw new Error('Failed to create booking');
       throw error
     }
   }

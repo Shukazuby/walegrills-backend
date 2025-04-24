@@ -37,6 +37,9 @@ export class CreateBookingDto {
   @ApiProperty({example: 'Birthday'})
   eventType?: string;
   
+  @ApiProperty({example: 'The Event Starts by 12pm'})
+  note?: string;
+  
   @ApiProperty({example: '100'})
   paymentOption: PaymentOptionss;
 

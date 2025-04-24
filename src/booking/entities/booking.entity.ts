@@ -59,6 +59,9 @@ export class Booking {
   eventStyle?: string;
 
   @Prop()
+  note?: string;
+
+  @Prop()
   phoneNumber: string;
 
   @Prop()
