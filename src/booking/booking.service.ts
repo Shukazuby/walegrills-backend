@@ -180,8 +180,7 @@ export class BookingService {
             quantity: 1,
           },
         ],
-        success_url: 'https://walegrills.com?session_id={CHECKOUT_SESSION_ID}',
-        cancel_url: 'https://your-domain.com/cancel',
+        success_url: 'https://walegrills-thankyou.vercel.app',
       });
 
       const invoiceNo = await generateUniqueKey(7);
