@@ -104,11 +104,12 @@ export class BookingService {
         chefs = 4;
         waiters = 5;
         equipmentCost = 250;
+        serviceTime = 8
       } else if (guests <= 400) {
         chefs = 4;
         waiters = 6;
         equipmentCost = 300;
-        serviceTime = 8
+        serviceTime = 9
       } else if (guests <= 500) {
         chefs = 4;
         waiters = 8;
