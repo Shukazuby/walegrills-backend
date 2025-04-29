@@ -84,7 +84,7 @@ export class BookingService {
       let equipmentCost = 0;
       let chefRate = 0;
       let waiterRate = 0;
-      let chargePermile = 0;
+      let chargePermile = 0; 
       let transportation = 0;
       let driverChargePh = 0;
       let serviceTime = 0
