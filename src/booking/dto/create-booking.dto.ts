@@ -22,8 +22,8 @@ export class CreateBookingDto {
   @ApiProperty({example: '2025-08-10 16:00:00'})
   eventDate: Date;
   
-  @ApiProperty({example: 6})
-  serviceTime: number;
+  @ApiProperty({example: 'Start Serving by 12 noon'})
+  servingTime: string;
   
   @ApiProperty({example: 'Buffet'})
   eventStyle?: string;

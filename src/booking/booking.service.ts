@@ -77,7 +77,7 @@ export class BookingService {
       const distance = await this.calculateDistance(dto.eventVenue);
       const distanceHour = distance.duration;
       const guests = dto.numberOfGuests;
-      const serviceTime = dto.serviceTime;
+      // const serviceTime = dto.serviceTime;
 
       let chefs = 0;
       let waiters = 0;
@@ -87,16 +87,19 @@ export class BookingService {
       let chargePermile = 0;
       let transportation = 0;
       let driverChargePh = 0;
+      let serviceTime = 0
 
       // Staff & equipment
       if (guests <= 100) {
         chefs = 1;
         waiters = 2;
         equipmentCost = 50;
+        serviceTime = 6
       } else if (guests <= 200) {
         chefs = 2;
         waiters = 4;
         equipmentCost = 100;
+        serviceTime = 7
       } else if (guests <= 300) {
         chefs = 4;
         waiters = 5;
@@ -105,10 +108,12 @@ export class BookingService {
         chefs = 4;
         waiters = 6;
         equipmentCost = 300;
+        serviceTime = 8
       } else if (guests <= 500) {
         chefs = 4;
         waiters = 8;
         equipmentCost = 350;
+        serviceTime = 10
       }
 
       // Staff rates
@@ -189,7 +194,8 @@ export class BookingService {
         ...dto,
         email,
         totalFee,
-        amountToPay, 
+        amountToPay,
+        serviceTime,
         invoiceNumber: invoiceNo,
         distance: distance.distance,
         eventDate: new Date(dto.eventDate),

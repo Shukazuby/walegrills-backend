@@ -53,6 +53,9 @@ export class Booking {
   serviceTime: number;
 
   @Prop()
+  servingTime: string;
+
+  @Prop()
   invoiceNumber?: number;
 
   @Prop()
