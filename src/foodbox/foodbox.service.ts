@@ -85,7 +85,7 @@ export class FoodboxService {
         .limit(limit)
         .populate([
           { path: 'planId' },
-          { path: 'itemsNeeded.productId', model: 'Product' },
+          { path: 'itemsSelected.productId', model: 'Product' },
         ])
         .sort({ createdAt: -1 });
 
@@ -160,7 +160,7 @@ export class FoodboxService {
         .limit(limit)
         .populate([
           { path: 'planId' },
-          { path: 'itemsNeeded.productId', model: 'Product' },
+          { path: 'itemsSelected.productId', model: 'Product' },
         ])
         .sort({ createdAt: -1 });
 
