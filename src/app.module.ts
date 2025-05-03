@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { PlanModule } from './plan/plan.module';
 import { FoodboxModule } from './foodbox/foodbox.module';
 import { WebhookController } from './webhook/webhook.controller';
+import { AuthModule } from './auth/auth.module';
 dotenv.config();
 @Module({
   imports: [
@@ -18,6 +19,7 @@ dotenv.config();
     UsersModule,
     PlanModule,
     FoodboxModule,
+    AuthModule,
   ],
   controllers: [AppController, WebhookController],
   providers: [AppService],

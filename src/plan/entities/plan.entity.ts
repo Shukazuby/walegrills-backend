@@ -11,6 +11,9 @@ export class Plan {
   @Prop()
   description?: string;
 
+  @Prop({default: 'ADMIN'})
+  role?: string;
+
   @Prop({ default: new Date() })
   createdAt: Date;
 
