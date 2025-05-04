@@ -1,4 +1,9 @@
-import { BadRequestException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import axios from 'axios';
 import Stripe from 'stripe';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -14,6 +19,12 @@ import {
 } from 'src/utils';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
+import {
+  calculatePaymentDeadline,
+  confirmBookingEmail,
+  confirmFullPaymentBookingEmail,
+} from 'src/Email/comformation';
+import { first } from 'rxjs';
 
 dotenv.config();
 
@@ -36,7 +47,6 @@ export class BookingService {
   async calculateDistance(
     destination: string,
   ): Promise<{ distance: number; duration: number }> {
-
     try {
       const url = `https://maps.googleapis.com/maps/api/distancematrix/json`;
 
@@ -47,26 +57,27 @@ export class BookingService {
           key: process.env.GOOGLE_API_KEY,
         },
       });
-  
+
       const element = res.data.rows[0].elements[0];
-  
+
       if (element.status !== 'OK') {
-        throw new BadRequestException(`Could not retrieve distance/duration. Please confirm event venue` );
+        throw new BadRequestException(
+          `Could not retrieve distance/duration. Please confirm event venue`,
+        );
       }
-  
+
       const distanceInMeters = element.distance.value; // meters
       const durationInSeconds = element.duration.value; // seconds
-  
+
       const distanceInMiles = distanceInMeters / 1609.34;
       const durationInHours = durationInSeconds / 3600;
-  
+
       return {
         distance: distanceInMiles,
         duration: durationInHours,
       };
-  
     } catch (error) {
-      throw error
+      throw error;
     }
   }
 
@@ -84,37 +95,37 @@ export class BookingService {
       let equipmentCost = 0;
       let chefRate = 0;
       let waiterRate = 0;
-      let chargePermile = 0; 
+      let chargePermile = 0;
       let transportation = 0;
       let driverChargePh = 0;
-      let serviceTime = 0
+      let serviceTime = 0;
 
       // Staff & equipment
       if (guests <= 100) {
         chefs = 1;
         waiters = 2;
         equipmentCost = 50;
-        serviceTime = 6
+        serviceTime = 6;
       } else if (guests <= 200) {
         chefs = 2;
         waiters = 4;
         equipmentCost = 100;
-        serviceTime = 7
+        serviceTime = 7;
       } else if (guests <= 300) {
         chefs = 4;
         waiters = 5;
         equipmentCost = 250;
-        serviceTime = 8
+        serviceTime = 8;
       } else if (guests <= 400) {
         chefs = 4;
         waiters = 6;
         equipmentCost = 300;
-        serviceTime = 9
+        serviceTime = 9;
       } else if (guests <= 500) {
         chefs = 4;
         waiters = 8;
         equipmentCost = 350;
-        serviceTime = 10
+        serviceTime = 10;
       }
 
       // Staff rates
@@ -165,7 +176,8 @@ export class BookingService {
       const totalFee =
         chefCost + waiterCost + equipmentCost + transportation + itemsTotal;
 
-        let amountToPay= chefCost + waiterCost + equipmentCost + transportation + itemsTotal;
+      let amountToPay =
+        chefCost + waiterCost + equipmentCost + transportation + itemsTotal;
       if (dto.paymentOption === 40) {
         amountToPay = totalFee * 0.4;
       }
@@ -203,7 +215,7 @@ export class BookingService {
         itemsTotal,
       });
 
-      booking.sessionId= session.id
+      booking.sessionId = session.id;
       await booking.save();
 
       const user = await this.userModel.findOne({ email });
@@ -224,7 +236,7 @@ export class BookingService {
       };
     } catch (error) {
       console.error('Booking creation failed:', error);
-      throw error
+      throw error;
     }
   }
 
@@ -260,7 +272,10 @@ export class BookingService {
         .find(searchFilter)
         .skip(skip)
         .limit(limit)
-        .populate([{ path: 'userId' }, { path: 'itemsNeeded.productId', model: 'Product' }])
+        .populate([
+          { path: 'userId' },
+          { path: 'itemsNeeded.productId', model: 'Product' },
+        ])
         .sort({ createdAt: -1 });
 
       if (!data || data.length === 0) {
@@ -332,7 +347,10 @@ export class BookingService {
         .find(searchFilter)
         .skip(skip)
         .limit(limit)
-        .populate([{ path: 'userId' }, { path: 'itemsNeeded.productId', model: 'Product' }])
+        .populate([
+          { path: 'userId' },
+          { path: 'itemsNeeded.productId', model: 'Product' },
+        ])
         .sort({ createdAt: -1 });
 
       if (!data || data.length === 0) {
@@ -388,8 +406,35 @@ export class BookingService {
     if (booking) {
       booking.paymentStatus = PaymentStatus.PAID;
       await booking.save();
+    }
 
+    if (booking.paymentOption === 40) {
+     const deadlineDate = await calculatePaymentDeadline(booking.eventDate.toString())
+      const bookingPayload = {
+        balance: booking.totalFee - booking.amountToPay,
+        paymentDeadline: deadlineDate,
+        eventDate: booking.eventDate,
+        deposit: booking.amountToPay,
+        itemsSelected: booking.itemsNeeded,
+        subject: `Catering Booking Confirmation - ${booking.eventDate}`,
+        recepient: booking.email,
+        firstName: booking.name
+
+      };
+      await confirmBookingEmail(bookingPayload);
+    }
+
+    if (booking.paymentOption === 100) {
+      const bookingPayload = {
+        eventDate: booking.eventDate,
+        deposit: booking.amountToPay,
+        itemsSelected: booking.itemsNeeded,
+        subject: `Catering Booking Confirmation - ${booking.eventDate}`,
+        recepient: booking.email,
+        firstName: booking.name
+
+      };
+      await confirmFullPaymentBookingEmail(bookingPayload);
     }
   }
-    
 }
