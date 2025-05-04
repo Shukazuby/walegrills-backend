@@ -10,6 +10,8 @@ import { PlanModule } from './plan/plan.module';
 import { FoodboxModule } from './foodbox/foodbox.module';
 import { WebhookController } from './webhook/webhook.controller';
 import { AuthModule } from './auth/auth.module';
+import { CronWork } from './utils/Cron/cron';
+import { CronWorkModule } from './utils/Cron/cron.module';
 dotenv.config();
 @Module({
   imports: [
@@ -20,6 +22,7 @@ dotenv.config();
     PlanModule,
     FoodboxModule,
     AuthModule,
+    CronWorkModule
   ],
   controllers: [AppController, WebhookController],
   providers: [AppService],

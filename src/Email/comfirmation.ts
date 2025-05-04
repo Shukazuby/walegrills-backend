@@ -1,19 +1,9 @@
-import { sendEmail } from "src/utils";
-
-export const bookingPayload = {
-  eventDate: '',
-  deposit: '',
-  balance: '',
-  paymentDeadline: '',
-  itemsSelected: '',
-  subject: '',
-  recepient: ''
-};
+import { sendEmail } from 'src/utils';
 
 export async function confirmBookingEmail(payload) {
-  const itemListHtml = payload.itemsSelected
+  const itemListHtml = payload?.itemsSelected
     .map((item) => {
-      return `<li>${item.productId.name} - Quantity: ${item.quantity}</li>`;
+      return `<li>${item?.productId?.name} - Quantity: ${item?.quantity}</li>`;
     })
     .join('');
 
@@ -82,20 +72,20 @@ export async function confirmBookingEmail(payload) {
                   Best regards,<br />
                   <strong>Zuby</strong><br />
                   Wale Grills
+                  <br />
                 </p>
               </div>
             </div>
           </body>
         </html>
       `;
-
-      await sendEmail(body, payload.subject, payload.recepient)
+  await sendEmail(body, payload.subject, payload.recepient);
 }
 
 export async function confirmFullPaymentBookingEmail(payload) {
-  const itemListHtml = payload.itemsSelected
+  const itemListHtml = payload?.itemsSelected
     .map((item) => {
-      return `<li>${item.productId.name} - Quantity: ${item.quantity}</li>`;
+      return `<li>${item?.productId?.name} - Quantity: ${item?.quantity}</li>`;
     })
     .join('');
 
@@ -167,14 +157,13 @@ export async function confirmFullPaymentBookingEmail(payload) {
       </html>
     `;
 
-    await sendEmail(body, payload.subject, payload.recepient)
-
+  await sendEmail(body, payload.subject, payload.recepient);
 }
 
 export async function PaymentReminderEmail(payload) {
-  const itemListHtml = payload.itemsSelected
+  const itemListHtml = payload?.itemsSelected
     .map((item) => {
-      return `<li>${item.productId.name} - Quantity: ${item.quantity}</li>`;
+      return `<li>${item?.productId?.name} - Quantity: ${item?.quantity}</li>`;
     })
     .join('');
 
@@ -244,20 +233,21 @@ export async function PaymentReminderEmail(payload) {
       </html>
     `;
 
-    await sendEmail(body, payload.subject, payload.recepient)
+  await sendEmail(body, payload.subject, payload.recepient);
 }
 
-export async function calculatePaymentDeadline(eventDateStr: string): Promise<string> {
-    const eventDate = new Date(eventDateStr);
-    const deadlineDate = new Date(eventDate);
-    deadlineDate.setDate(eventDate.getDate() - 3);
-  
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    };
-  
-    return deadlineDate.toLocaleDateString('en-GB', options);
-  }
-  
+export async function calculatePaymentDeadline(
+  eventDateStr: string,
+): Promise<string> {
+  const eventDate = new Date(eventDateStr);
+  const deadlineDate = new Date(eventDate);
+  deadlineDate.setDate(eventDate.getDate() - 3);
+
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  };
+
+  return deadlineDate.toLocaleDateString('en-GB', options);
+}

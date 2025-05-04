@@ -23,7 +23,7 @@ import {
   calculatePaymentDeadline,
   confirmBookingEmail,
   confirmFullPaymentBookingEmail,
-} from 'src/Email/comformation';
+} from 'src/Email/comfirmation';
 import { first } from 'rxjs';
 
 dotenv.config();
@@ -402,24 +402,28 @@ export class BookingService {
   }
 
   async markAsPaidBooking(sessionId: string) {
-    const booking = await this.bookingModel.findOne({ sessionId: sessionId });
+    const booking = await this.bookingModel.findOne({ sessionId: sessionId }).populate([
+      { path: 'userId' },
+      { path: 'itemsNeeded.productId', model: 'Product' },
+    ]);
     if (booking) {
       booking.paymentStatus = PaymentStatus.PAID;
       await booking.save();
     }
 
     if (booking.paymentOption === 40) {
-     const deadlineDate = await calculatePaymentDeadline(booking.eventDate.toString())
+      const deadlineDate = await calculatePaymentDeadline(
+        booking.eventDate.toString(),
+      );
       const bookingPayload = {
         balance: booking.totalFee - booking.amountToPay,
         paymentDeadline: deadlineDate,
         eventDate: booking.eventDate,
         deposit: booking.amountToPay,
-        itemsSelected: booking.itemsNeeded,
+        itemsSelected: booking?.itemsNeeded,
         subject: `Catering Booking Confirmation - ${booking.eventDate}`,
         recepient: booking.email,
-        firstName: booking.name
-
+        firstName: booking.name,
       };
       await confirmBookingEmail(bookingPayload);
     }
@@ -428,11 +432,10 @@ export class BookingService {
       const bookingPayload = {
         eventDate: booking.eventDate,
         deposit: booking.amountToPay,
-        itemsSelected: booking.itemsNeeded,
+        itemsSelected: booking?.itemsNeeded,
         subject: `Catering Booking Confirmation - ${booking.eventDate}`,
         recepient: booking.email,
-        firstName: booking.name
-
+        firstName: booking.name,
       };
       await confirmFullPaymentBookingEmail(bookingPayload);
     }
