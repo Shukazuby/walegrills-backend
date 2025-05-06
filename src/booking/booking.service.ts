@@ -25,6 +25,8 @@ import {
   confirmFullPaymentBookingEmail,
 } from 'src/Email/comfirmation';
 import { first } from 'rxjs';
+import { UpdateBookingDto } from './dto/update-booking.dto';
+import { Admin } from 'src/auth/entities/auth.entity';
 
 dotenv.config();
 
@@ -40,6 +42,7 @@ export class BookingService {
     @InjectModel(Booking.name) private readonly bookingModel: Model<Booking>,
     @InjectModel(Product.name) private readonly productModel: Model<Product>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(Admin.name) private readonly adminModel: Model<Admin>,
 
     private readonly userSrv: UsersService,
   ) {}
@@ -440,4 +443,57 @@ export class BookingService {
       await confirmFullPaymentBookingEmail(bookingPayload);
     }
   }
+
+  async adminUpdatABooking(adminId: string, bookingId: string, dto: UpdateBookingDto): Promise<BaseResponseTypeDTO> {
+    try {
+      const admin = await this.adminModel.findOne({ _id: adminId });
+  
+      if (!admin) {
+        throw new NotFoundException(`Admin not found.`);
+      }
+  
+      const booking = await this.bookingModel.findOne({ _id: bookingId });
+  
+      if (!booking) {
+        throw new NotFoundException(`Booking not found.`);
+      }
+  
+      Object.assign(booking, dto);
+      await booking.save();
+  
+      return {
+        data: booking,
+        success: true,
+        code: HttpStatus.OK,
+        message: 'Booking updated successfully',
+      };
+    } catch (ex) {
+      throw ex;
+    }
+  }
+  
+  async adminDeleABooking(adminId: string, bookingId: string): Promise<BaseResponseTypeDTO> {
+    try {
+      const admin = await this.adminModel.findOne({ _id: adminId });
+
+      if (!admin) {
+        throw new NotFoundException(`admin not found.`);
+      }
+      const booking = await this.bookingModel.findOne({ _id: bookingId });
+
+      if (!booking) {
+        throw new NotFoundException(`Booking not found.`);
+      }
+      await booking.deleteOne()
+      
+      return {
+        success: true,
+        code: HttpStatus.OK,
+        message: 'Booking Deleted',
+      };
+    } catch (ex) {
+      throw ex;
+    }
+  }
+
 }

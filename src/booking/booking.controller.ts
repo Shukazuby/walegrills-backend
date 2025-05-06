@@ -7,12 +7,15 @@ import {
   Get,
   HttpStatus,
   Param,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BaseResponseTypeDTO } from 'src/utils';
 import { PaginationFilterDTO } from 'src/product/dto/create-product.dto';
+import { UpdateBookingDto } from './dto/update-booking.dto';
 
 @ApiTags('Booking')
 @Controller('booking')
@@ -82,6 +85,41 @@ export class BookingController {
   })
   async getABooking(@Param('id') id: string): Promise<BaseResponseTypeDTO> {
     const result = await this.bookingService.getABooking(id);
+    return result;
+  }
+
+  @Patch(':adminId/:id')
+  @ApiOperation({ summary: 'Admon update booking' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Admin update booking' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid input' })
+  async adminUpdatABooking(
+    @Param('adminId') adminId: string,
+    @Param('id') id: string,
+    @Body() payload: UpdateBookingDto,
+  ): Promise<BaseResponseTypeDTO> {
+    const result = await this.bookingService.adminUpdatABooking(
+      adminId,
+      id,
+      payload,
+    );
+    return result;
+  }
+
+  @Delete(':adminId/:id')
+  @ApiOperation({ summary: ' Delete a Foodbox by  Id' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Foodbox deleted',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
+  })
+  async adminDeleABooking(
+    @Param('adminId') adminId: string,
+    @Param('id') id: string,
+  ): Promise<BaseResponseTypeDTO> {
+    const result = await this.bookingService.adminDeleABooking(adminId, id);
     return result;
   }
 }

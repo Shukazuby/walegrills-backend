@@ -8,12 +8,15 @@ import { BaseResponseTypeDTO, IPaginationFilter } from 'src/utils';
 import { Plan } from 'src/plan/entities/plan.entity';
 import { PlanService } from 'src/plan/plan.service';
 import { PaymentStatus } from 'src/booking/entities/booking.entity';
+import { Admin } from 'src/auth/entities/auth.entity';
+import { UpdateFoodboxDto } from './dto/update-foodbox.dto';
 
 @Injectable()
 export class FoodboxService {
   constructor(
     @InjectModel(Foodbox.name) private readonly foodboxModel: Model<Foodbox>,
     @InjectModel(Plan.name) private readonly planModel: Model<Plan>,
+    @InjectModel(Admin.name) private readonly adminModel: Model<Admin>,
 
     private readonly userSrv: UsersService,
     private readonly planSrv: PlanService,
@@ -38,7 +41,6 @@ export class FoodboxService {
     const buyPlan = await this.planSrv.buyPlan(dto.planId);
     foodbox.sessionId = buyPlan.stripePaymentId;
     await foodbox.save();
-
 
     return {
       data: {
@@ -219,6 +221,65 @@ export class FoodboxService {
     if (foodbox) {
       foodbox.paymentStatus = PaymentStatus.PAID;
       await foodbox.save();
+    }
+  }
+
+  async adminUpdatAFoodbox(
+    adminId: string,
+    foodboxId: string,
+    dto: UpdateFoodboxDto,
+  ): Promise<BaseResponseTypeDTO> {
+    try {
+      const admin = await this.adminModel.findOne({ _id: adminId });
+
+      if (!admin) {
+        throw new NotFoundException(`Admin not found.`);
+      }
+
+      const fooxdbox = await this.foodboxModel.findOne({ _id: foodboxId });
+
+      if (!fooxdbox) {
+        throw new NotFoundException(`Fooxdbox not found.`);
+      }
+
+      Object.assign(fooxdbox, dto);
+      await fooxdbox.save();
+
+      return {
+        data: fooxdbox,
+        success: true,
+        code: HttpStatus.OK,
+        message: 'fooxdbox updated successfully',
+      };
+    } catch (ex) {
+      throw ex;
+    }
+  }
+
+  async adminDeleAFoodbox(
+    adminId: string,
+    foodboxId: string,
+  ): Promise<BaseResponseTypeDTO> {
+    try {
+      const admin = await this.adminModel.findOne({ _id: adminId });
+
+      if (!admin) {
+        throw new NotFoundException(`admin not found.`);
+      }
+      const foodBox = await this.foodboxModel.findOne({ _id: foodboxId });
+
+      if (!foodBox) {
+        throw new NotFoundException(`FoodBox not found.`);
+      }
+      await foodBox.deleteOne();
+
+      return {
+        success: true,
+        code: HttpStatus.OK,
+        message: 'FoodBox Deleted',
+      };
+    } catch (ex) {
+      throw ex;
     }
   }
 }
