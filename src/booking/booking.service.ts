@@ -240,7 +240,7 @@ export class BookingService {
         invoiceNumber: invoiceNo,
         distance: distance.distance,
         eventDate: new Date(dto.eventDate),
-        balanceDue: balanceDue,
+        balanceDue: Math.round(balanceDue * 100) / 100,
         itemsTotal,
         balancePaymentLink: session2.url
       });
