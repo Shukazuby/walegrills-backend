@@ -289,6 +289,7 @@ export class FoodboxService {
       itemsSelected: foodbox?.itemsSelected,
       subject: `We've Received Your Meal Choices - Delivery On ${formatDate(foodbox.deliveryDate)}`,
       firstName: foodbox.name,
+      recepient: foodbox.email
     };
 
     await confirmFoodBox(foodBoxPayload)
