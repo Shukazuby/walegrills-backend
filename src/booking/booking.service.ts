@@ -23,6 +23,7 @@ import {
   calculatePaymentDeadline,
   confirmBookingEmail,
   confirmFullPaymentBookingEmail,
+  formatDate,
 } from 'src/Email/comfirmation';
 import { first } from 'rxjs';
 import { UpdateBookingDto } from './dto/update-booking.dto';
@@ -443,6 +444,8 @@ export class BookingService {
       await booking.save();
     }
 
+    const eventDate = formatDate(booking.eventDate)
+    
     if (booking?.paymentOption === 40) {
       const deadlineDate = await calculatePaymentDeadline(
         booking.eventDate.toString(),
@@ -452,10 +455,10 @@ export class BookingService {
           Math.round(booking.totalFee * 100) / 100 -
           Math.round(booking.amountToPay * 100) / 100,
         paymentDeadline: deadlineDate,
-        eventDate: booking.eventDate,
+        eventDate: eventDate,
         deposit: Math.round(booking.amountToPay * 100) / 100,
         itemsSelected: booking?.itemsNeeded,
-        subject: `Catering Booking Confirmation - ${booking.eventDate}`,
+        subject: `Catering Booking Confirmation - ${eventDate}`,
         recepient: booking.email,
         firstName: booking.name,
         balancePaymentLink: booking.balancePaymentLink
@@ -465,10 +468,10 @@ export class BookingService {
 
     if (booking?.paymentOption === 100) {
       const bookingPayload = {
-        eventDate: booking.eventDate,
+        eventDate: eventDate,
         deposit: Math.round(booking.amountToPay * 100) / 100,
         itemsSelected: booking?.itemsNeeded,
-        subject: `Catering Booking Confirmation - ${booking.eventDate}`,
+        subject: `Catering Booking Confirmation - ${eventDate}`,
         recepient: booking.email,
         firstName: booking.name,
       };

@@ -169,7 +169,7 @@ export async function confirmBookingEmail(payload) {
       <div class="container">
         <div class="header">
           <h1>Wale Grills</h1>
-          <div class="tagline">Flame-Crafted Goodness for Every Occasion</div>
+          <div class="tagline">Every Occassion. Anywhere.</div>
         </div>
 
         <p>Dear ${payload.firstName},</p>
@@ -219,7 +219,7 @@ export async function confirmBookingEmail(payload) {
             Wale Grills
           </p>
 
-          <p class="contact">Phone: 01234 567890</p>
+          <p class="contact">Phone: +44 7951 952265</p>
         </div>
       </div>
     </body>
@@ -381,14 +381,14 @@ export async function confirmFullPaymentBookingEmail(payload) {
       <div class="container">
         <div class="header">
           <h1>Wale Grills</h1>
-          <div class="tagline">Flame-Crafted Goodness for Every Occasion</div>
+          <div class="tagline">Every Occassion. Anywhere.</div>
         </div>
 
         <p>Dear ${payload.firstName},</p>
 
         <p>
           We are delighted to confirm that we have received your full payment of
-          <strong>£${payload.fullPayment}</strong> for your upcoming event on
+          <strong>£${payload.deposit}</strong> for your upcoming event on
           <strong>${payload.eventDate}</strong>.
         </p>
 
@@ -400,7 +400,7 @@ export async function confirmFullPaymentBookingEmail(payload) {
         <h4>Event Summary:</h4>
         <ul>
           <li><strong>Event Date:</strong> ${payload.eventDate}</li>
-          <li><strong>Total Paid:</strong> £${payload.fullPayment}</li>
+          <li><strong>Total Paid:</strong> £${payload.deposit}</li>
         </ul>
 
         <h4>Your Selected Items:</h4>
@@ -424,7 +424,7 @@ export async function confirmFullPaymentBookingEmail(payload) {
             Wale Grills
           </p>
 
-          <p class="contact">Phone: 01234 567890</p>
+          <p class="contact">Phone: +44 7951 952265</p>
         </div>
       </div>
     </body>
@@ -596,7 +596,7 @@ export async function PaymentReminderEmail(payload) {
       <div class="container">
         <div class="header">
           <h1>Wale Grills</h1>
-          <div class="tagline">Flame-Crafted Goodness for Every Occasion</div>
+          <div class="tagline">Every Occassion. Anywhere.</div>
         </div>
 
         <p>Dear ${payload.firstName},</p>
@@ -641,7 +641,7 @@ export async function PaymentReminderEmail(payload) {
             Wale Grills
           </p>
 
-          <p class="contact">Phone: 01234 567890</p>
+          <p class="contact">Phone: +44 7951 952265</p>
         </div>
       </div>
     </body>
@@ -666,3 +666,18 @@ export async function calculatePaymentDeadline(
 
   return deadlineDate.toLocaleDateString('en-GB', options);
 }
+
+export async function formatDate(dateString) {
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const month = date.toLocaleString('default', { month: 'long' });
+  const year = date.getFullYear();
+  
+  // Add suffix for the day
+  const suffix = day === 1 || day === 21 || day === 31 ? 'st' : 
+                 day === 2 || day === 22 ? 'nd' : 
+                 day === 3 || day === 23 ? 'rd' : 'th';
+  
+  return `${day}${suffix} ${month} ${year}`;
+}
+
