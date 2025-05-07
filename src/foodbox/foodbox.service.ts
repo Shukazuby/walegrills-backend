@@ -10,6 +10,7 @@ import { PlanService } from 'src/plan/plan.service';
 import { PaymentStatus } from 'src/booking/entities/booking.entity';
 import { Admin } from 'src/auth/entities/auth.entity';
 import { UpdateFoodboxDto } from './dto/update-foodbox.dto';
+import { confirmFoodBox, formatDate } from 'src/Email/comfirmation';
 
 @Injectable()
 export class FoodboxService {
@@ -217,14 +218,6 @@ export class FoodboxService {
     }
   }
 
-  async markAsPaidFoodbox(sessionId: string) {
-    const foodbox = await this.foodboxModel.findOne({ sessionId });
-    if (foodbox) {
-      foodbox.paymentStatus = PaymentStatus.PAID;
-      await foodbox.save();
-    }
-  }
-
   async adminUpdatAFoodbox(
     adminId: string,
     foodboxId: string,
@@ -283,4 +276,23 @@ export class FoodboxService {
       throw ex;
     }
   }
+
+  async markAsPaidFoodbox(sessionId: string) {
+    const foodbox = await this.foodboxModel.findOne({ sessionId });
+    if (foodbox) {
+      foodbox.paymentStatus = PaymentStatus.PAID;
+      await foodbox.save();
+    }
+
+    const foodBoxPayload = {
+      deliveryDate: formatDate(foodbox.deliveryDate),
+      itemsSelected: foodbox?.itemsSelected,
+      subject: `We've Received Your Meal Choices - Delivery On ${formatDate(foodbox.deliveryDate)}`,
+      firstName: foodbox.name,
+    };
+
+    await confirmFoodBox(foodBoxPayload)
+  }
+
+
 }

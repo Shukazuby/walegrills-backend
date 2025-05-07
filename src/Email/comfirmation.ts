@@ -610,7 +610,7 @@ export async function confirmFoodBox(payload) {
         <div class="container">
           <div class="header">
             <h1>Wale Grills</h1>
-            <div class="tagline">Flame-Crafted Goodness for Every Occasion</div>
+            <div class="tagline">Every Occasion. Anywhere</div>
           </div>
   
           <p>Dear ${payload.firstName},</p>
@@ -627,11 +627,11 @@ export async function confirmFoodBox(payload) {
   
           <h4>Your Selected Meals:</h4>
           <ul>
-            ${payload.mealListHtml}
+            ${itemListHtml}
           </ul>
   
           <p>
-            If you have any last-minute changes or questions, don’t hesitate to reach out—we’re here to help!
+            If you have any changes or questions, don’t hesitate to reach out—we’re here to help!
           </p>
   
           <div class="footer">
@@ -645,7 +645,7 @@ export async function confirmFoodBox(payload) {
               Wale Grills
             </p>
   
-            <p class="contact">Phone: 01234 567890</p>
+            <p class="contact">Phone: +44 7951 952265</p>
           </div>
         </div>
       </body>
