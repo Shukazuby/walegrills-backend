@@ -130,6 +130,43 @@ export class AuthService {
     return hashedPassword;
   }
 
+  // async getAdminDashboard(adminId: string): Promise<BaseResponseTypeDTO> {
+  //   const admin = await this.adminModel.findById(adminId);
+  //   if (!admin) {
+  //     throw new NotFoundException('Admin not found.');
+  //   }
+  
+  //   const [bookings, foodBoxes, products] = await Promise.all([
+  //     this.bookingModel.find({ paymentStatus: 'paid' }),
+  //     this.foodboxModel.find({ paymentStatus: 'paid' }),
+  //     this.productModel.find(),
+  //   ]);
+  
+  //   const totalSalesBooking = bookings.reduce(
+  //     (sum, booking) => sum + (booking.amountToPay ?? 0),
+  //     0,
+  //   );
+  
+  //   const totalSalesFoodBox = foodBoxes.reduce(
+  //     (sum, box) => sum + (box.amountPaid ?? 0),
+  //     0,
+  //   );
+  
+  //   const totalSales = totalSalesBooking + totalSalesFoodBox;
+  
+  //   return {
+  //     data: {
+  //       totalSales,
+  //       totalSuccessBooking: bookings.length,
+  //       totalSuccessFoodbox: foodBoxes.length,
+  //       totalProduct: products.length,
+  //     },
+  //     success: true,
+  //     code: HttpStatus.OK,
+  //     message: 'Admin Dashboard',
+  //   };
+  // }
+
   async getAdminDashboard(adminId: string): Promise<BaseResponseTypeDTO> {
     const admin = await this.adminModel.findById(adminId);
     if (!admin) {
@@ -154,16 +191,53 @@ export class AuthService {
   
     const totalSales = totalSalesBooking + totalSalesFoodBox;
   
+    const salesRecords = [
+      ...bookings.map((b) => ({
+        date: b.createdAt,
+        amount: b.amountToPay ?? 0,
+      })),
+      ...foodBoxes.map((f) => ({
+        date: f.createdAt,
+        amount: f.amountPaid ?? 0,
+      })),
+    ];
+  
+    const monthlySalesMap: Record<string, number> = {};
+  
+    for (const record of salesRecords) {
+      const date = new Date(record.date);
+      const monthYear = date.toLocaleString('default', {
+        month: 'long',
+        year: 'numeric',
+      }); // e.g., 'March 2025'
+      monthlySalesMap[monthYear] = (monthlySalesMap[monthYear] || 0) + record.amount;
+    }
+  
+    let monthlySales = Object.entries(monthlySalesMap).map(([month, amount]) => ({
+      month,
+      amount: Math.round(amount),
+    }));
+  
+    // Optional: sort chronologically
+    monthlySales = monthlySales.sort((a, b) => {
+      const dateA = new Date(a.month);
+      const dateB = new Date(b.month);
+      return dateA.getTime() - dateB.getTime();
+    });
+  
     return {
       data: {
-        totalSales,
+        totalSales: Math.round(totalSales),
         totalSuccessBooking: bookings.length,
         totalSuccessFoodbox: foodBoxes.length,
         totalProduct: products.length,
+        monthlySales,
       },
       success: true,
       code: HttpStatus.OK,
       message: 'Admin Dashboard',
     };
   }
+    
+
   }

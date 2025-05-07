@@ -184,8 +184,11 @@ export class BookingService {
         chefCost + waiterCost + equipmentCost + transportation + itemsTotal;
       if (dto.paymentOption === 40) {
         amountToPay = totalFee * 0.4;
-        balanceDue = totalFee - amountToPay
+        balanceDue = totalFee - amountToPay;
       }
+
+      // balancePaymentLink: Math.round(booking.balancePaymentLink * 100) / 100
+
 
       // Stripe checkout
       const session = await stripe.checkout.sessions.create({
@@ -206,6 +209,26 @@ export class BookingService {
         success_url: 'https://www.walegrills.com/thank-you',
       });
 
+      const session2 = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        mode: 'payment',
+        line_items: [
+          {
+            price_data: {
+              currency: 'gbp',
+              product_data: {
+                name: 'Event Booking',
+              },
+              unit_amount: Math.round(balanceDue * 100),
+            },
+            quantity: 1,
+          },
+        ],
+        success_url: 'https://www.walegrills.com/thank-you',
+      });
+
+
+
       const invoiceNo = await generateUniqueKey(7);
       // Save to DB
       const booking = new this.bookingModel({
@@ -219,6 +242,7 @@ export class BookingService {
         eventDate: new Date(dto.eventDate),
         balanceDue: balanceDue,
         itemsTotal,
+        balancePaymentLink: session2.url
       });
 
       booking.sessionId = session.id;
@@ -408,10 +432,12 @@ export class BookingService {
   }
 
   async markAsPaidBooking(sessionId: string) {
-    const booking = await this.bookingModel.findOne({ sessionId: sessionId }).populate([
-      { path: 'userId' },
-      { path: 'itemsNeeded.productId', model: 'Product' },
-    ]);
+    const booking = await this.bookingModel
+      .findOne({ sessionId: sessionId })
+      .populate([
+        { path: 'userId' },
+        { path: 'itemsNeeded.productId', model: 'Product' },
+      ]);
     if (booking) {
       booking.paymentStatus = PaymentStatus.PAID;
       await booking.save();
@@ -422,14 +448,17 @@ export class BookingService {
         booking.eventDate.toString(),
       );
       const bookingPayload = {
-        balance: booking.totalFee - booking.amountToPay,
+        balance:
+          Math.round(booking.totalFee * 100) / 100 -
+          Math.round(booking.amountToPay * 100) / 100,
         paymentDeadline: deadlineDate,
         eventDate: booking.eventDate,
-        deposit: booking.amountToPay,
+        deposit: Math.round(booking.amountToPay * 100) / 100,
         itemsSelected: booking?.itemsNeeded,
         subject: `Catering Booking Confirmation - ${booking.eventDate}`,
         recepient: booking.email,
         firstName: booking.name,
+        balancePaymentLink: booking.balancePaymentLink
       };
       await confirmBookingEmail(bookingPayload);
     }
@@ -437,7 +466,7 @@ export class BookingService {
     if (booking?.paymentOption === 100) {
       const bookingPayload = {
         eventDate: booking.eventDate,
-        deposit: booking.amountToPay,
+        deposit: Math.round(booking.amountToPay * 100) / 100,
         itemsSelected: booking?.itemsNeeded,
         subject: `Catering Booking Confirmation - ${booking.eventDate}`,
         recepient: booking.email,
@@ -447,23 +476,27 @@ export class BookingService {
     }
   }
 
-  async adminUpdatABooking(adminId: string, bookingId: string, dto: UpdateBookingDto): Promise<BaseResponseTypeDTO> {
+  async adminUpdatABooking(
+    adminId: string,
+    bookingId: string,
+    dto: UpdateBookingDto,
+  ): Promise<BaseResponseTypeDTO> {
     try {
       const admin = await this.adminModel.findOne({ _id: adminId });
-  
+
       if (!admin) {
         throw new NotFoundException(`Admin not found.`);
       }
-  
+
       const booking = await this.bookingModel.findOne({ _id: bookingId });
-  
+
       if (!booking) {
         throw new NotFoundException(`Booking not found.`);
       }
-  
+
       Object.assign(booking, dto);
       await booking.save();
-  
+
       return {
         data: booking,
         success: true,
@@ -474,8 +507,11 @@ export class BookingService {
       throw ex;
     }
   }
-  
-  async adminDeleABooking(adminId: string, bookingId: string): Promise<BaseResponseTypeDTO> {
+
+  async adminDeleABooking(
+    adminId: string,
+    bookingId: string,
+  ): Promise<BaseResponseTypeDTO> {
     try {
       const admin = await this.adminModel.findOne({ _id: adminId });
 
@@ -487,8 +523,8 @@ export class BookingService {
       if (!booking) {
         throw new NotFoundException(`Booking not found.`);
       }
-      await booking.deleteOne()
-      
+      await booking.deleteOne();
+
       return {
         success: true,
         code: HttpStatus.OK,
@@ -498,5 +534,4 @@ export class BookingService {
       throw ex;
     }
   }
-
 }

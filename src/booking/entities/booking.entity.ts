@@ -77,6 +77,9 @@ export class Booking {
   sessionId?: string;
 
   @Prop()
+  balancePaymentLink?: string;
+
+  @Prop()
   itemsNeeded: Items[];
 
   @Prop()
