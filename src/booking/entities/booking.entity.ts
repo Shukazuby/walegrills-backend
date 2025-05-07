@@ -83,6 +83,9 @@ export class Booking {
   totalFee: number;
 
   @Prop()
+  balanceDue?: number;
+
+  @Prop()
   amountToPay: number;
 
   @Prop()

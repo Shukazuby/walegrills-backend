@@ -145,12 +145,13 @@ export class PlanService {
           quantity: 1,
         },
       ],
-      success_url: 'https://walegrills-thankyou.vercel.app',
+      success_url: 'https://www.walegrills.com/thank-you',
     });
 
     return {
       paymentLink: session.url,
       stripePaymentId: session.id,
+      planAmount: plan.amount
     };
   }
 }

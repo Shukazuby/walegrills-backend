@@ -44,4 +44,16 @@ export class AuthController {
     const result = await this.authService.login(payload);
     return result;
   }
+
+  @Get('dashboard/:adminId')
+  @ApiOperation({ summary: 'Admin dashbord' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Admin dashboad' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
+  })
+  async getAdminDashboard(@Param('adminId') adminId: string): Promise<BaseResponseTypeDTO> {
+    const result = await this.authService.getAdminDashboard(adminId);
+    return result;
+  }
 }

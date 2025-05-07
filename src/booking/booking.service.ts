@@ -91,6 +91,7 @@ export class BookingService {
       const distance = await this.calculateDistance(dto.eventVenue);
       const distanceHour = distance.duration;
       const guests = dto.numberOfGuests;
+      let balanceDue = 0;
       // const serviceTime = dto.serviceTime;
 
       let chefs = 0;
@@ -183,6 +184,7 @@ export class BookingService {
         chefCost + waiterCost + equipmentCost + transportation + itemsTotal;
       if (dto.paymentOption === 40) {
         amountToPay = totalFee * 0.4;
+        balanceDue = totalFee - amountToPay
       }
 
       // Stripe checkout
@@ -201,7 +203,7 @@ export class BookingService {
             quantity: 1,
           },
         ],
-        success_url: 'https://walegrills-thankyou.vercel.app',
+        success_url: 'https://www.walegrills.com/thank-you',
       });
 
       const invoiceNo = await generateUniqueKey(7);
@@ -215,6 +217,7 @@ export class BookingService {
         invoiceNumber: invoiceNo,
         distance: distance.distance,
         eventDate: new Date(dto.eventDate),
+        balanceDue: balanceDue,
         itemsTotal,
       });
 

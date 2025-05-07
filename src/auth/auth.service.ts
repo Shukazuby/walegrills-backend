@@ -3,21 +3,27 @@ import {
   ConflictException,
   HttpStatus,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { LoginDto, RegisterAdminDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { BaseResponseTypeDTO } from 'src/utils';
 import { InjectModel } from '@nestjs/mongoose';
 import { Admin } from './entities/auth.entity';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { Foodbox } from 'src/foodbox/entities/foodbox.entity';
+import { Booking } from 'src/booking/entities/booking.entity';
+import { Product } from 'src/product/entities/product.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(Admin.name) private readonly adminModel: Model<Admin>,
+    @InjectModel(Foodbox.name) private readonly foodboxModel: Model<Foodbox>,
+    @InjectModel(Booking.name) private readonly bookingModel: Model<Booking>,
+    @InjectModel(Product.name) private readonly productModel: Model<Product>,
   ) {}
 
   async register(dto: RegisterAdminDto): Promise<BaseResponseTypeDTO> {
@@ -29,7 +35,10 @@ export class AuthService {
       }
 
       const hashedPassword = await this.hashPassword(dto?.password);
-      const admin = await this.adminModel.create({ ...dto, password: hashedPassword});
+      const admin = await this.adminModel.create({
+        ...dto,
+        password: hashedPassword,
+      });
 
       const token = await this.generateJwt(admin);
       const data = {
@@ -121,8 +130,40 @@ export class AuthService {
     return hashedPassword;
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async getAdminDashboard(adminId: string): Promise<BaseResponseTypeDTO> {
+    const admin = await this.adminModel.findById(adminId);
+    if (!admin) {
+      throw new NotFoundException('Admin not found.');
+    }
+  
+    const [bookings, foodBoxes, products] = await Promise.all([
+      this.bookingModel.find({ paymentStatus: 'paid' }),
+      this.foodboxModel.find({ paymentStatus: 'paid' }),
+      this.productModel.find(),
+    ]);
+  
+    const totalSalesBooking = bookings.reduce(
+      (sum, booking) => sum + (booking.amountToPay ?? 0),
+      0,
+    );
+  
+    const totalSalesFoodBox = foodBoxes.reduce(
+      (sum, box) => sum + (box.amountPaid ?? 0),
+      0,
+    );
+  
+    const totalSales = totalSalesBooking + totalSalesFoodBox;
+  
+    return {
+      data: {
+        totalSales,
+        totalSuccessBooking: bookings.length,
+        totalSuccessFoodbox: foodBoxes.length,
+        totalProduct: products.length,
+      },
+      success: true,
+      code: HttpStatus.OK,
+      message: 'Admin Dashboard',
+    };
   }
-
-}
+  }

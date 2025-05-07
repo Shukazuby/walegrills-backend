@@ -40,6 +40,7 @@ export class FoodboxService {
 
     const buyPlan = await this.planSrv.buyPlan(dto.planId);
     foodbox.sessionId = buyPlan.stripePaymentId;
+    foodbox.amountPaid = buyPlan.planAmount
     await foodbox.save();
 
     return {

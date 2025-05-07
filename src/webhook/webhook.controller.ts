@@ -60,7 +60,7 @@ import {
   
           await this.bookingService.markAsPaidBooking(session.id);
           await this.foodboxService.markAsPaidFoodbox(session.id);
-  
+          res.status(200).json({ received: true })
           break;
         default:
           console.warn(`Unhandled event type ${event.type}`);

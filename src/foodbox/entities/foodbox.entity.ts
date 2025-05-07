@@ -23,6 +23,9 @@ export class Foodbox {
   imageurl?: string;
 
   @Prop()
+  amountPaid?: number;
+
+  @Prop()
   sessionId?: string;
 
   @Prop()
