@@ -190,7 +190,6 @@ export class BookingService {
 
       // balancePaymentLink: Math.round(booking.balancePaymentLink * 100) / 100
 
-
       // Stripe checkout
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -228,8 +227,6 @@ export class BookingService {
         success_url: 'https://www.walegrills.com/thank-you',
       });
 
-
-
       const invoiceNo = await generateUniqueKey(7);
       // Save to DB
       const booking = new this.bookingModel({
@@ -243,8 +240,12 @@ export class BookingService {
         eventDate: new Date(dto.eventDate),
         balanceDue: Math.round(balanceDue * 100) / 100,
         itemsTotal,
-        balancePaymentLink: session2.url
       });
+
+      if (dto.paymentOption === 40) {
+        booking.balancePaymentLink = session2.url;
+        await booking.save();
+      }
 
       booking.sessionId = session.id;
       await booking.save();
@@ -444,8 +445,8 @@ export class BookingService {
       await booking.save();
     }
 
-    const eventDate = formatDate(booking.eventDate)
-    
+    const eventDate = formatDate(booking.eventDate);
+
     if (booking?.paymentOption === 40) {
       const deadlineDate = await calculatePaymentDeadline(
         booking.eventDate.toString(),
@@ -461,7 +462,7 @@ export class BookingService {
         subject: `Catering Booking Confirmation - ${eventDate}`,
         recepient: booking.email,
         firstName: booking.name,
-        balancePaymentLink: booking.balancePaymentLink
+        balancePaymentLink: booking.balancePaymentLink,
       };
       await confirmBookingEmail(bookingPayload);
     }
