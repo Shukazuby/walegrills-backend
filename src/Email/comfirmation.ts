@@ -610,7 +610,7 @@ export async function confirmFoodBox(payload) {
         <div class="container">
           <div class="header">
             <h1>Wale Grills</h1>
-            <div class="tagline">Every Occasion. Anywhere</div>
+            <div class="tagline">Every Occasion. Anywhere.</div>
           </div>
   
           <p>Dear ${payload.firstName},</p>
@@ -622,7 +622,7 @@ export async function confirmFoodBox(payload) {
   
           <p>
             Your food box is scheduled for delivery on <strong>${payload.deliveryDate}</strong>.
-            Please ensure someone is available to receive it at your preferred address.
+            Please ensure someone is available to receive it at your preferred address (${payload.address}).
           </p>
   
           <h4>Your Selected Meals:</h4>
@@ -631,7 +631,7 @@ export async function confirmFoodBox(payload) {
           </ul>
   
           <p>
-            If you have any changes or questions, don’t hesitate to reach out—we’re here to help!
+            If you have any changes or questions, don’t hesitate to reach out at least 4 days before the delivery date!
           </p>
   
           <div class="footer">

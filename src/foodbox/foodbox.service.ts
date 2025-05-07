@@ -278,7 +278,12 @@ export class FoodboxService {
   }
 
   async markAsPaidFoodbox(sessionId: string) {
-    const foodbox = await this.foodboxModel.findOne({ sessionId });
+    const foodbox = await this.foodboxModel.findOne({ sessionId })
+    .populate([
+      { path: 'userId' },
+      { path: 'itemsSelected.productId', model: 'Product' },
+    ]);
+;
     if (foodbox) {
       foodbox.paymentStatus = PaymentStatus.PAID;
       await foodbox.save();
@@ -289,7 +294,8 @@ export class FoodboxService {
       itemsSelected: foodbox?.itemsSelected,
       subject: `We've Received Your Meal Choices - Delivery On ${formatDate(foodbox.deliveryDate)}`,
       firstName: foodbox.name,
-      recepient: foodbox.email
+      recepient: foodbox.email,
+      address: foodbox.deliveryAddress
     };
 
     await confirmFoodBox(foodBoxPayload)
