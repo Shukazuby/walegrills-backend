@@ -67,12 +67,18 @@ import { Booking } from 'src/booking/entities/booking.entity';
 
           const foodbox = await this.foodboxModel.findOne({sessionId: session.id})
           if(foodbox){
+            console.log('##### Found Food box ######')
             await this.foodboxService.markAsPaidFoodbox(session.id);
+            console.log('****** Food Box Mark as Paid********')
+
           }
   
           const booking = await this.bookingModel.findOne({sessionId: session.id})
           if(booking){
+            console.log('##### Found Boking ######')
             await this.bookingService.markAsPaidBooking(session.id);
+            console.log('****** Booking Mark as Paid********')
+
           }
   
           res.status(200).json({ received: true })
