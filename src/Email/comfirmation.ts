@@ -7,79 +7,6 @@ export async function confirmBookingEmail(payload) {
     })
     .join('');
 
-  // const body = `
-  //       <!DOCTYPE html>
-  //       <html>
-  //         <head>
-  //           <meta charset="UTF-8" />
-  //           <title>Booking Confirmation</title>
-  //           <style>
-  //             body {
-  //               font-family: Arial, sans-serif;
-  //               color: #333;
-  //               line-height: 1.6;
-  //             }
-  //             .container {
-  //               max-width: 600px;
-  //               margin: 0 auto;
-  //               padding: 20px;
-  //               border: 1px solid #eee;
-  //               background-color: #fafafa;
-  //             }
-  //             .footer {
-  //               margin-top: 30px;
-  //             }
-  //           </style>
-  //         </head>
-  //         <body>
-  //           <div class="container">
-  //             <p>Dear ${payload.firstName},</p>
-
-  //             <p>
-  //               Thank you for choosing us to cater your event on
-  //               <strong>${payload.eventDate}</strong>.<br />
-  //               We are pleased to confirm your booking and acknowledge your deposit of
-  //               <strong>£${payload.deposit}</strong>.
-  //               Your remaining balance of <strong>£${payload.balance}</strong> is due 3 days
-  //               before the event (by <strong>${payload.paymentDeadline}</strong>).
-  //             </p>
-
-  //             <h4>Event Details:</h4>
-  //             <ul>
-  //               <li><strong>Event Date:</strong> ${payload.eventDate}</li>
-  //               <li><strong>Deposit Paid:</strong> £${payload.deposit}</li>
-  //               <li><strong>Balance Due:</strong> £${payload.balance}</li>
-  //               <li><strong>Payment Deadline:</strong> ${payload.paymentDeadline}</li>
-  //             </ul>
-
-  //             <h4>Your selected items:</h4>
-  //             <ul>
-  //               ${itemListHtml}
-  //             </ul>
-
-  //             <p>
-  //               Should you have any additional requests or changes to your order,
-  //               feel free to reach out to us at least one week in advance.
-  //             </p>
-
-  //             <div class="footer">
-  //               <p>
-  //                 Thank you once again for trusting us to make your event special. We
-  //                 look forward to serving you!
-  //               </p>
-
-  //               <p>
-  //                 Best regards,<br />
-  //                 <strong>Zuby</strong><br />
-  //                 Wale Grills
-  //                 <br />
-  //               </p>
-  //             </div>
-  //           </div>
-  //         </body>
-  //       </html>
-  //     `;
-
   const body = `
   <!DOCTYPE html>
   <html>
@@ -235,74 +162,6 @@ export async function confirmFullPaymentBookingEmail(payload) {
       return `<li>${item?.productId?.name} - Quantity: ${item?.quantity}</li>`;
     })
     .join('');
-
-  // const body = `
-  //     <!DOCTYPE html>
-  //     <html>
-  //       <head>
-  //         <meta charset="UTF-8" />
-  //         <title>Booking Confirmation</title>
-  //         <style>
-  //           body {
-  //             font-family: Arial, sans-serif;
-  //             color: #333;
-  //             line-height: 1.6;
-  //           }
-  //           .container {
-  //             max-width: 600px;
-  //             margin: 0 auto;
-  //             padding: 20px;
-  //             border: 1px solid #eee;
-  //             background-color: #fafafa;
-  //           }
-  //           .footer {
-  //             margin-top: 30px;
-  //           }
-  //         </style>
-  //       </head>
-  //       <body>
-  //         <div class="container">
-  //           <p>Dear ${payload.firstName},</p>
-
-  //           <p>
-  //             Thank you for choosing us to cater your event on
-  //             <strong>${payload.eventDate}</strong>.<br />
-  //             We are pleased to confirm your booking and acknowledge your full payment of
-  //             <strong>£${payload.deposit}</strong>.
-  //           </p>
-
-  //           <h4>Event Details:</h4>
-  //           <ul>
-  //             <li><strong>Event Date:</strong> ${payload.eventDate}</li>
-  //             <li><strong>Amount Paid:</strong> £${payload.deposit}</li>
-  //           </ul>
-
-  //           <h4>Your selected items:</h4>
-  //           <ul>
-  //             ${itemListHtml}
-  //           </ul>
-
-  //           <p>
-  //             Should you have any additional requests or changes to your order,
-  //             feel free to reach out to us at least one week in advance.
-  //           </p>
-
-  //           <div class="footer">
-  //             <p>
-  //               Thank you once again for trusting us to make your event special. We
-  //               look forward to serving you!
-  //             </p>
-
-  //             <p>
-  //               Best regards,<br />
-  //               <strong>Zuby</strong><br />
-  //               Wale Grills
-  //             </p>
-  //           </div>
-  //         </div>
-  //       </body>
-  //     </html>
-  //   `;
 
   const body = `
   <!DOCTYPE html>
@@ -667,17 +526,146 @@ export async function calculatePaymentDeadline(
   return deadlineDate.toLocaleDateString('en-GB', options);
 }
 
-export async function formatDate(dateString) {
+export async function confirmFoodBox(payload) {
+  const itemListHtml = payload?.itemsSelected
+    .map((item) => {
+      return `<li>${item?.productId?.name} - Quantity: ${item?.quantity}</li>`;
+    })
+    .join('');
+
+    const body = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <title>Meal Plan Confirmation</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #4e3d36;
+            background-color: #f4f1ed;
+            margin: 0;
+            padding: 0;
+          }
+  
+          .container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #fffaf5;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e3d9cf;
+          }
+  
+          .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0d6ca;
+          }
+  
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #8b5e3c;
+          }
+  
+          .tagline {
+            font-size: 14px;
+            color: #a78b73;
+          }
+  
+          h4 {
+            color: #7a5743;
+            margin-top: 24px;
+          }
+  
+          ul {
+            padding-left: 20px;
+          }
+  
+          li {
+            margin-bottom: 8px;
+          }
+  
+          .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0d6ca;
+            font-size: 14px;
+            color: #7a5743;
+          }
+  
+          .footer p {
+            margin: 4px 0;
+          }
+  
+          .contact {
+            margin-top: 10px;
+            font-weight: bold;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Wale Grills</h1>
+            <div class="tagline">Flame-Crafted Goodness for Every Occasion</div>
+          </div>
+  
+          <p>Dear ${payload.firstName},</p>
+  
+          <p>
+            Thank you for purchasing our meal plan! We’ve successfully received your meal options
+            and our team is already preparing everything with care and attention to flavor.
+          </p>
+  
+          <p>
+            Your food box is scheduled for delivery on <strong>${payload.deliveryDate}</strong>.
+            Please ensure someone is available to receive it at your preferred address.
+          </p>
+  
+          <h4>Your Selected Meals:</h4>
+          <ul>
+            ${payload.mealListHtml}
+          </ul>
+  
+          <p>
+            If you have any last-minute changes or questions, don’t hesitate to reach out—we’re here to help!
+          </p>
+  
+          <div class="footer">
+            <p>
+              Thank you once again for choosing Wale Grills. We can’t wait for you to enjoy your meals!
+            </p>
+  
+            <p>
+              Best regards,<br />
+              <strong>Zuby</strong><br />
+              Wale Grills
+            </p>
+  
+            <p class="contact">Phone: 01234 567890</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+  
+  await sendEmail(body, payload.subject, payload.recepient);
+}
+
+export function formatDate(dateString) {
   const date = new Date(dateString);
   const day = date.getDate();
   const month = date.toLocaleString('default', { month: 'long' });
   const year = date.getFullYear();
   
-  // Add suffix for the day
-  const suffix = day === 1 || day === 21 || day === 31 ? 'st' : 
-                 day === 2 || day === 22 ? 'nd' : 
-                 day === 3 || day === 23 ? 'rd' : 'th';
-  
+  const suffix =
+    day === 1 || day === 21 || day === 31 ? 'st' :
+    day === 2 || day === 22 ? 'nd' :
+    day === 3 || day === 23 ? 'rd' : 'th';
+
   return `${day}${suffix} ${month} ${year}`;
 }
 
