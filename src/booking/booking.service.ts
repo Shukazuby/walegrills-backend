@@ -417,7 +417,7 @@ export class BookingService {
       await booking.save();
     }
 
-    if (booking.paymentOption === 40) {
+    if (booking?.paymentOption === 40) {
       const deadlineDate = await calculatePaymentDeadline(
         booking.eventDate.toString(),
       );
@@ -434,7 +434,7 @@ export class BookingService {
       await confirmBookingEmail(bookingPayload);
     }
 
-    if (booking.paymentOption === 100) {
+    if (booking?.paymentOption === 100) {
       const bookingPayload = {
         eventDate: booking.eventDate,
         deposit: booking.amountToPay,

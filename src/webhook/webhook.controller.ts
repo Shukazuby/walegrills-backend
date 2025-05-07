@@ -13,6 +13,10 @@ import {
   import { FoodboxService } from 'src/foodbox/foodbox.service';
   import Stripe from 'stripe';
   import * as dotenv from 'dotenv';
+import { InjectModel } from '@nestjs/mongoose';
+import { Foodbox } from 'src/foodbox/entities/foodbox.entity';
+import { Model } from 'mongoose';
+import { Booking } from 'src/booking/entities/booking.entity';
   
   dotenv.config();
   
@@ -26,6 +30,9 @@ import {
     constructor(
       private readonly bookingService: BookingService,
       private readonly foodboxService: FoodboxService,
+      @InjectModel(Foodbox.name) private readonly foodboxModel: Model<Foodbox>,
+      @InjectModel(Booking.name) private readonly bookingModel: Model<Booking>,
+      
     ) {}
   
     @Post()
@@ -57,9 +64,17 @@ import {
         case 'checkout.session.completed':
           const session = event.data.object as Stripe.Checkout.Session;
           console.log('✅ Checkout session completed:', session.id);
+
+          const foodbox = await this.foodboxModel.findOne({sessionId: session.id})
+          if(foodbox){
+            await this.foodboxService.markAsPaidFoodbox(session.id);
+          }
   
-          await this.bookingService.markAsPaidBooking(session.id);
-          await this.foodboxService.markAsPaidFoodbox(session.id);
+          const booking = await this.bookingModel.findOne({sessionId: session.id})
+          if(booking){
+            await this.bookingService.markAsPaidBooking(session.id);
+          }
+  
           res.status(200).json({ received: true })
           break;
         default:
