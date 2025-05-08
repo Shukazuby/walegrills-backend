@@ -1,34 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
 import * as cron from 'node-cron';
+import { BookingService } from 'src/booking/booking.service';
+import { Booking } from 'src/booking/entities/booking.entity';
 import { confirmBookingEmail } from 'src/Email/comfirmation';
 
 @Injectable()
 export class CronWork {
-  constructor() {
+  constructor(private readonly bookSrv: BookingService) {
     this.scheduleJobs();
   }
 
   private scheduleJobs() {
-    // cron.schedule('* * * * *', async () => {
-    //   console.log('🚀 Running scheduled job ...');
-
-    //   const bookingPayload = {
-    //     balance: 600,
-    //     paymentDeadline: '20-07-14',
-    //     eventDate: '20-07-17',
-    //     deposit: 40,
-    //     itemsSelected: [
-    //       {
-    //         productId: '67fd353c9678acf4462b5d0a',
-    //         quantity: 3,
-    //       },
-    //     ],
-    //     subject: `Catering Booking Confirmation - 20-07-17`,
-    //     recepient: 'shukazuby@gmail.com',
-    //     firstName: 'Zubyyyy',
-    //   };
-    //   await confirmBookingEmail(bookingPayload);
-    //   console.log('created ...');
-    // });
+    cron.schedule('* * * * *', async () => {
+      console.log('🚀 Running scheduled job ...');
+      await this.bookSrv.BalanceReminder();
+      console.log('created ...');
+    });
   }
 }

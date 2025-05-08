@@ -77,6 +77,9 @@ export class Booking {
   isHalfPayment?: boolean;
 
   @Prop()
+  isBalanceReminder?: boolean;
+
+  @Prop()
   sessionId?: string;
 
   @Prop()

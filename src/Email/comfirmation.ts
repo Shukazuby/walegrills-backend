@@ -463,13 +463,13 @@ export async function PaymentReminderEmail(payload) {
         <p>Dear ${payload.firstName},</p>
 
         <p>
-          Thank you for your recent booking with us! We’ve received your <strong>40% deposit</strong> of
+          Thank you for your recent booking with us! We had earlier received your <strong>40% deposit</strong> of
           <strong>£${payload.deposit}</strong> for your event on <strong>${payload.eventDate}</strong>.
         </p>
 
         <p>
           To complete your booking, the remaining balance of <strong>£${payload.balance}</strong> is due by
-          <strong>${payload.paymentDeadline}</strong>.
+          <strong>${payload.deadline}</strong>.
         </p>
 
         <h4>Event Summary:</h4>
@@ -477,7 +477,7 @@ export async function PaymentReminderEmail(payload) {
           <li><strong>Event Date:</strong> ${payload.eventDate}</li>
           <li><strong>Deposit Paid:</strong> £${payload.deposit}</li>
           <li><strong>Remaining Balance:</strong> £${payload.balance}</li>
-          <li><strong>Payment Deadline:</strong> ${payload.paymentDeadline}</li>
+          <li><strong>Payment Deadline:</strong> ${payload.deadline}</li>
         </ul>
 
         <p>

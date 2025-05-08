@@ -25,6 +25,7 @@ import {
   confirmBookingEmail,
   confirmFullPaymentBookingEmail,
   formatDate,
+  PaymentReminderEmail,
 } from 'src/Email/comfirmation';
 import { first } from 'rxjs';
 import { UpdateBookingDto } from './dto/update-booking.dto';
@@ -249,7 +250,7 @@ export class BookingService {
       }
 
       booking.sessionId = session?.id;
-      booking.balanceSessionId = session2?.id
+      booking.balanceSessionId = session2?.id;
       await booking.save();
 
       const user = await this.userModel.findOne({ email });
@@ -503,8 +504,9 @@ export class BookingService {
       ]);
     if (booking) {
       booking.paymentStatus = PaymentStatus.PAID;
-      booking.amountToPay = booking.amountToPay + Math.round(booking.balanceDue * 100) / 100
-      booking.isHalfPayment= false
+      booking.amountToPay =
+      Math.round(booking.amountToPay * 100) / 100 + Math.round(booking.balanceDue * 100) / 100;
+      booking.isHalfPayment = false;
       await booking.save();
     }
 
@@ -521,7 +523,6 @@ export class BookingService {
       };
       await confirmBookingBalance(bookingPayload);
     }
-
   }
 
   async markAsPaidBooking(sessionId: string) {
@@ -571,5 +572,49 @@ export class BookingService {
     }
   }
 
+  async BalanceReminder() {
+    const bookings = await this.bookingModel
+      .find({
+        isHalfPayment: true,
+        isBalanceReminder: false,
+        paymentStatus: 'paid',
+        paymentOption: 40,
+      })
+      .populate([
+        { path: 'userId' },
+        { path: 'itemsNeeded.productId', model: 'Product' },
+      ]);
 
+    if (!bookings || bookings.length === 0) return;
+
+    for (const book of bookings) {
+      const deadlineDate = await calculatePaymentDeadline(
+        book.eventDate.toString(),
+      );
+
+      const today = new Date();
+      const isDue = new Date(deadlineDate) <= today;
+
+      if (isDue) {
+        const bookingPayload = {
+          eventDate: formatDate(book.eventDate),
+          deposit: Math.round(book.amountToPay * 100) / 100,
+          deadline: formatDate(deadlineDate),
+          balance: Math.round(book.balanceDue),
+          itemsSelected: book?.itemsNeeded,
+          subject: `Balance Reminder: Complete Your Wale Grills Booking - ${formatDate(deadlineDate)}`,
+          recepient: book.email,
+          firstName: book.name,
+          balancePaymentLink: book.balancePaymentLink
+        };
+        console.log("###############")
+
+        await PaymentReminderEmail(bookingPayload);
+        console.log("*********")
+        book.isBalanceReminder = true;
+        book.updatedAt = new Date();
+        await book.save();
+      }
+    }
+  }
 }
