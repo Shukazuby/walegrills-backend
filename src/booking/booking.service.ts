@@ -235,7 +235,7 @@ export class BookingService {
         ...dto,
         email,
         totalFee,
-        amountToPay,
+        amountToPay: Math.round(amountToPay * 100) / 100,
         serviceTime,
         invoiceNumber: invoiceNo,
         distance: distance.distance,
@@ -521,7 +521,7 @@ export class BookingService {
         itemsSelected: booking?.itemsNeeded,
         subject: `Payment Complete! We’re All Set for Your Event - ${eventDate}`,
         recepient: booking.email,
-        firstName: booking.name,
+        name: booking.name,
       };
       await confirmBookingBalance(bookingPayload);
     }
