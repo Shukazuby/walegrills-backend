@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ProductTypes } from '../entities/product.entity';
+import { BookingFilter } from 'src/booking/entities/booking.entity';
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Rice' })
@@ -22,32 +23,41 @@ export class CreateProductDto {
 }
 
 export class PaginationFilterDTO {
-    @ApiProperty({
-      required: false,
-      description: 'Number of records per page',
-      type: Number,
-    })
-    limit?: number;
-  
-    @ApiProperty({
-      required: false,
-      description: 'Page number for pagination',
-      type: Number,
-    })
-    page?: number;
-  
-    @ApiProperty({
-      required: false,
-      description: 'Search term to filter the results',
-      type: String,
-    })
-    search?: string;
+  @ApiProperty({
+    required: false,
+    description: 'Number of records per page',
+    type: Number,
+  })
+  limit?: number;
 
-    @ApiProperty({
-      required: false,
-      description: 'Category',
-      type: String,
-    })
-    category?: string;
-  }
-  
+  @ApiProperty({
+    required: false,
+    description: 'Page number for pagination',
+    type: Number,
+  })
+  page?: number;
+
+  @ApiProperty({
+    required: false,
+    description: 'Search term to filter the results',
+    type: String,
+  })
+  search?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Category',
+    type: String,
+  })
+  category?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Payment Status',
+    type: String,
+    enum: BookingFilter
+
+  })
+  paymentStatus?: string;
+
+}

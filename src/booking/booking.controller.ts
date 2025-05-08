@@ -122,4 +122,17 @@ export class BookingController {
     const result = await this.bookingService.adminDeleABooking(adminId, id);
     return result;
   }
+
+  @Get(':adminId/booking-bal')
+  @ApiOperation({ summary: 'Admin find all bookings with pending balance' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Get all bookings with pending balance' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid input' })
+  async findBookingsWithPendingBal(
+    @Param() adminId: string,
+    @Query() filters: PaginationFilterDTO,
+  ): Promise<BaseResponseTypeDTO> {
+    const result = await this.bookingService.findBookingsWithPendingBal(adminId, filters);
+    return result;
+  }
+
 }

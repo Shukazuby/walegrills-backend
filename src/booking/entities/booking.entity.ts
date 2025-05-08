@@ -15,6 +15,14 @@ export enum PaymentStatus {
   REFUNDED = 'refunded',
 }
 
+export enum BookingFilter {
+  ALL = 'paid',
+  BALDUE = 'allBalDue',
+  FULPAYMENT = 'allFullyPaid',
+  PENDING = 'pending',
+}
+
+
 export class Items {
   @ApiProperty({
     example: '67fd3438ea2e860ce70d11b8',

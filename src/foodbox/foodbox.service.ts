@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateFoodboxDto } from './dto/create-foodbox.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Foodbox } from './entities/foodbox.entity';
@@ -41,7 +46,7 @@ export class FoodboxService {
 
     const buyPlan = await this.planSrv.buyPlan(dto.planId);
     foodbox.sessionId = buyPlan.stripePaymentId;
-    foodbox.amountPaid = buyPlan.planAmount
+    foodbox.amountPaid = buyPlan.planAmount;
     await foodbox.save();
 
     return {
@@ -56,7 +61,7 @@ export class FoodboxService {
   }
 
   async findAllFoodBox(
-    filters: IPaginationFilter,
+    filters: IPaginationFilter & { paymentStatus?: string },
   ): Promise<BaseResponseTypeDTO> {
     try {
       const searchFilter: any = {};
@@ -75,6 +80,22 @@ export class FoodboxService {
             return {};
           })
           .filter((condition) => Object.keys(condition).length > 0);
+      }
+
+      if (filters.paymentStatus === 'paid') {
+        searchFilter.paymentStatus = 'paid';
+      }
+
+      if (filters.paymentStatus === 'pending') {
+        searchFilter.paymentStatus = 'pending';
+      }
+
+      if (filters.paymentStatus === 'allBalDue') {
+        throw new BadRequestException('Filter by (paid and pending) only');
+      }
+
+      if (filters.paymentStatus === 'allFullyPaid') {
+        throw new BadRequestException('Filter by (paid and pending) only');
       }
 
       const limit = filters.limit || 100;
@@ -278,12 +299,12 @@ export class FoodboxService {
   }
 
   async markAsPaidFoodbox(sessionId: string) {
-    const foodbox = await this.foodboxModel.findOne({ sessionId })
-    .populate([
-      { path: 'userId' },
-      { path: 'itemsSelected.productId', model: 'Product' },
-    ]);
-;
+    const foodbox = await this.foodboxModel
+      .findOne({ sessionId })
+      .populate([
+        { path: 'userId' },
+        { path: 'itemsSelected.productId', model: 'Product' },
+      ]);
     if (foodbox) {
       foodbox.paymentStatus = PaymentStatus.PAID;
       await foodbox.save();
@@ -295,11 +316,9 @@ export class FoodboxService {
       subject: `We've Received Your Meal Choices - Delivery On ${formatDate(foodbox.deliveryDate)}`,
       firstName: foodbox.name,
       recepient: foodbox.email,
-      address: foodbox.deliveryAddress
+      address: foodbox.deliveryAddress,
     };
 
-    await confirmFoodBox(foodBoxPayload)
+    await confirmFoodBox(foodBoxPayload);
   }
-
-
 }

@@ -277,15 +277,91 @@ export class BookingService {
     }
   }
 
+  // async findAllBookings(
+  //   filters: IPaginationFilter & {
+  //     allPaid?: string;
+  //     allBalDue?: string;
+  //     allHalfPayment?: string;
+  //     allFullyPaid? : string;
+  //   },
+  // ): Promise<BaseResponseTypeDTO> {
+  //   try {
+  //     const searchFilter: any = {};
+  //     if (filters.search) {
+  //       const searchTerm = filters.search.trim();
+  //       const userFields = Object.keys(this.bookingModel.schema.obj);
+
+  //       searchFilter.$or = userFields
+  //         .map((field) => {
+  //           const fieldType = this.bookingModel.schema.obj[field]?.type;
+  //           if (fieldType === String) {
+  //             return {
+  //               [field]: { $regex: searchTerm, $options: 'i' },
+  //             };
+  //           }
+  //           return {};
+  //         })
+  //         .filter((condition) => Object.keys(condition).length > 0);
+  //     }
+
+  //     const limit = filters.limit || 100;
+  //     const page = filters.page || 1;
+  //     const skip = (page - 1) * limit;
+
+  //     const totalCount = await this.bookingModel.countDocuments(searchFilter);
+
+  //     const data = await this.bookingModel
+  //       .find(searchFilter)
+  //       .skip(skip)
+  //       .limit(limit)
+  //       .populate([
+  //         { path: 'userId' },
+  //         { path: 'itemsNeeded.productId', model: 'Product' },
+  //       ])
+  //       .sort({ createdAt: -1 });
+
+  //     if (!data || data.length === 0) {
+  //       return {
+  //         data: [],
+  //         success: true,
+  //         code: HttpStatus.OK,
+  //         message: 'Bookings Not Found',
+  //         limit,
+  //         page,
+  //         search: filters?.search,
+  //       };
+  //     }
+
+  //     return {
+  //       data: {
+  //         totalCount,
+  //         data,
+  //       },
+  //       success: true,
+  //       code: HttpStatus.OK,
+  //       message: 'All Bookings Found',
+  //       limit: filters.limit,
+  //       page: filters.page,
+  //       search: filters.search,
+  //     };
+  //   } catch (ex) {
+  //     throw ex;
+  //   }
+  // }
+
   async findAllBookings(
-    filters: IPaginationFilter,
+    filters: IPaginationFilter & {
+      paymentStatus?: string;
+    },
   ): Promise<BaseResponseTypeDTO> {
     try {
       const searchFilter: any = {};
+  
+      // Handle search
       if (filters.search) {
         const searchTerm = filters.search.trim();
         const userFields = Object.keys(this.bookingModel.schema.obj);
-
+  
         searchFilter.$or = userFields
           .map((field) => {
             const fieldType = this.bookingModel.schema.obj[field]?.type;
@@ -298,13 +374,32 @@ export class BookingService {
           })
           .filter((condition) => Object.keys(condition).length > 0);
       }
-
+  
+      // Apply payment filters
+      if (filters.paymentStatus === 'paid') {
+        searchFilter.paymentStatus = 'paid';
+      }
+  
+      if (filters.paymentStatus === 'allBalDue') {
+        searchFilter.paymentStatus = 'paid';
+        searchFilter.isHalfPayment = true;
+      }
+  
+      if (filters.paymentStatus === 'allFullyPaid') {
+        searchFilter.paymentStatus = 'paid';
+        searchFilter.isHalfPayment = false;
+      }
+  
+      if (filters.paymentStatus === 'pending') {
+        searchFilter.paymentStatus = 'pending';
+      }
+  
       const limit = filters.limit || 100;
       const page = filters.page || 1;
       const skip = (page - 1) * limit;
-
+  
       const totalCount = await this.bookingModel.countDocuments(searchFilter);
-
+  
       const data = await this.bookingModel
         .find(searchFilter)
         .skip(skip)
@@ -314,7 +409,7 @@ export class BookingService {
           { path: 'itemsNeeded.productId', model: 'Product' },
         ])
         .sort({ createdAt: -1 });
-
+  
       if (!data || data.length === 0) {
         return {
           data: [],
@@ -326,7 +421,7 @@ export class BookingService {
           search: filters?.search,
         };
       }
-
+  
       return {
         data: {
           totalCount,
@@ -335,15 +430,15 @@ export class BookingService {
         success: true,
         code: HttpStatus.OK,
         message: 'All Bookings Found',
-        limit: filters.limit,
-        page: filters.page,
-        search: filters.search,
+        limit,
+        page,
+        search: filters?.search,
       };
     } catch (ex) {
       throw ex;
     }
   }
-
+    
   async findBookingsByUser(
     filters: IPaginationFilter,
     email?: string,
@@ -497,6 +592,83 @@ export class BookingService {
     }
   }
 
+  async findBookingsWithPendingBal(
+    adminId: string,
+    filters: IPaginationFilter,
+  ): Promise<BaseResponseTypeDTO> {
+    try {
+      const admin = await this.adminModel.findOne({ _id: adminId });
+
+      if (!admin) {
+        throw new NotFoundException(`admin not found.`);
+      }
+
+      const searchFilter: any = {
+        isHalfPayment: true, // Filter for bookings with pending balance
+      };
+
+      if (filters.search) {
+        const searchTerm = filters.search.trim();
+        const userFields = Object.keys(this.bookingModel.schema.obj);
+
+        searchFilter.$or = userFields
+          .map((field) => {
+            const fieldType = this.bookingModel.schema.obj[field]?.type;
+            if (fieldType === String) {
+              return {
+                [field]: { $regex: searchTerm, $options: 'i' },
+              };
+            }
+            return {};
+          })
+          .filter((condition) => Object.keys(condition).length > 0);
+      }
+
+      const limit = filters.limit || 100;
+      const page = filters.page || 1;
+      const skip = (page - 1) * limit;
+
+      const totalCount = await this.bookingModel.countDocuments(searchFilter);
+
+      const data = await this.bookingModel
+        .find(searchFilter)
+        .skip(skip)
+        .limit(limit)
+        .populate([
+          { path: 'userId' },
+          { path: 'itemsNeeded.productId', model: 'Product' },
+        ])
+        .sort({ createdAt: -1 });
+
+      if (!data || data.length === 0) {
+        return {
+          data: [],
+          success: true,
+          code: HttpStatus.OK,
+          message: 'Bookings Not Found',
+          limit,
+          page,
+          search: filters?.search,
+        };
+      }
+
+      return {
+        data: {
+          totalCount,
+          data,
+        },
+        success: true,
+        code: HttpStatus.OK,
+        message: 'Bookings with pending balance found',
+        limit,
+        page,
+        search: filters?.search,
+      };
+    } catch (ex) {
+      throw ex;
+    }
+  }
+
   async markAsPaidBookingBalance(sessionId: string) {
     const booking = await this.bookingModel
       .findOne({ balanceSessionId: sessionId })
@@ -507,7 +679,8 @@ export class BookingService {
     if (booking) {
       booking.paymentStatus = PaymentStatus.PAID;
       booking.amountToPay =
-      Math.round(booking.amountToPay * 100) / 100 + Math.round(booking.balanceDue * 100) / 100;
+        Math.round(booking.amountToPay * 100) / 100 +
+        Math.round(booking.balanceDue * 100) / 100;
       booking.isHalfPayment = false;
       await booking.save();
     }
@@ -607,12 +780,12 @@ export class BookingService {
           subject: `Balance Reminder: Complete Your Wale Grills Booking - ${formatDate(deadlineDate)}`,
           recepient: book.email,
           firstName: book.name,
-          balancePaymentLink: book.balancePaymentLink
+          balancePaymentLink: book.balancePaymentLink,
         };
-        console.log("###############")
+        console.log('###############');
 
         await PaymentReminderEmail(bookingPayload);
-        console.log("*********")
+        console.log('*********');
         book.isBalanceReminder = true;
         book.updatedAt = new Date();
         await book.save();
