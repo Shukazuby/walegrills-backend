@@ -74,7 +74,13 @@ export class Booking {
   eventType?: string;
 
   @Prop()
+  isHalfPayment?: boolean;
+
+  @Prop()
   sessionId?: string;
+
+  @Prop()
+  balanceSessionId?: string;
 
   @Prop()
   balancePaymentLink?: string;

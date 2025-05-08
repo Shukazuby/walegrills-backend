@@ -75,12 +75,21 @@ import { Booking } from 'src/booking/entities/booking.entity';
   
           const booking = await this.bookingModel.findOne({sessionId: session.id})
           if(booking){
-            console.log('##### Found Boking ######')
+            console.log('##### Found Booking ######')
             await this.bookingService.markAsPaidBooking(session.id);
             console.log('****** Booking Mark as Paid********')
 
           }
   
+          const bookingBalance = await this.bookingModel.findOne({balanceSessionId: session.id})
+          if(bookingBalance){
+            console.log('##### Found Boking ######')
+            await this.bookingService.markAsPaidBookingBalance(session.id);
+            console.log('****** Booking Balanace Mark as Paid********')
+
+          }
+  
+
           res.status(200).json({ received: true })
           break;
         default:

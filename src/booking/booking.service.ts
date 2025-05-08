@@ -21,6 +21,7 @@ import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import {
   calculatePaymentDeadline,
+  confirmBookingBalance,
   confirmBookingEmail,
   confirmFullPaymentBookingEmail,
   formatDate,
@@ -247,7 +248,8 @@ export class BookingService {
         await booking.save();
       }
 
-      booking.sessionId = session.id;
+      booking.sessionId = session?.id;
+      booking.balanceSessionId = session2?.id
       await booking.save();
 
       const user = await this.userModel.findOne({ email });
@@ -433,53 +435,6 @@ export class BookingService {
     }
   }
 
-  async markAsPaidBooking(sessionId: string) {
-    const booking = await this.bookingModel
-      .findOne({ sessionId: sessionId })
-      .populate([
-        { path: 'userId' },
-        { path: 'itemsNeeded.productId', model: 'Product' },
-      ]);
-    if (booking) {
-      booking.paymentStatus = PaymentStatus.PAID;
-      await booking.save();
-    }
-
-    const eventDate = formatDate(booking.eventDate);
-
-    if (booking?.paymentOption === 40) {
-      const deadlineDate = await calculatePaymentDeadline(
-        booking.eventDate.toString(),
-      );
-      const bookingPayload = {
-        balance:
-          Math.round(booking.totalFee * 100) / 100 -
-          Math.round(booking.amountToPay * 100) / 100,
-        paymentDeadline: deadlineDate,
-        eventDate: eventDate,
-        deposit: Math.round(booking.amountToPay * 100) / 100,
-        itemsSelected: booking?.itemsNeeded,
-        subject: `Catering Booking Confirmation - ${eventDate}`,
-        recepient: booking.email,
-        firstName: booking.name,
-        balancePaymentLink: booking.balancePaymentLink,
-      };
-      await confirmBookingEmail(bookingPayload);
-    }
-
-    if (booking?.paymentOption === 100) {
-      const bookingPayload = {
-        eventDate: eventDate,
-        deposit: Math.round(booking.amountToPay * 100) / 100,
-        itemsSelected: booking?.itemsNeeded,
-        subject: `Catering Booking Confirmation - ${eventDate}`,
-        recepient: booking.email,
-        firstName: booking.name,
-      };
-      await confirmFullPaymentBookingEmail(bookingPayload);
-    }
-  }
-
   async adminUpdatABooking(
     adminId: string,
     bookingId: string,
@@ -538,4 +493,83 @@ export class BookingService {
       throw ex;
     }
   }
+
+  async markAsPaidBookingBalance(sessionId: string) {
+    const booking = await this.bookingModel
+      .findOne({ balanceSessionId: sessionId })
+      .populate([
+        { path: 'userId' },
+        { path: 'itemsNeeded.productId', model: 'Product' },
+      ]);
+    if (booking) {
+      booking.paymentStatus = PaymentStatus.PAID;
+      booking.amountToPay = booking.amountToPay + Math.round(booking.balanceDue * 100) / 100
+      booking.isHalfPayment= false
+      await booking.save();
+    }
+
+    const eventDate = formatDate(booking.eventDate);
+
+    if (booking?.paymentOption === 40) {
+      const bookingPayload = {
+        eventDate: eventDate,
+        deposit: Math.round(booking.balanceDue * 100) / 100,
+        itemsSelected: booking?.itemsNeeded,
+        subject: `Payment Complete! We’re All Set for Your Event - ${eventDate}`,
+        recepient: booking.email,
+        firstName: booking.name,
+      };
+      await confirmBookingBalance(bookingPayload);
+    }
+
+  }
+
+  async markAsPaidBooking(sessionId: string) {
+    const booking = await this.bookingModel
+      .findOne({ sessionId: sessionId })
+      .populate([
+        { path: 'userId' },
+        { path: 'itemsNeeded.productId', model: 'Product' },
+      ]);
+    if (booking) {
+      booking.paymentStatus = PaymentStatus.PAID;
+      await booking.save();
+    }
+
+    const eventDate = formatDate(booking.eventDate);
+
+    if (booking?.paymentOption === 40) {
+      const deadlineDate = await calculatePaymentDeadline(
+        booking.eventDate.toString(),
+      );
+      const bookingPayload = {
+        balance:
+          Math.round(booking.totalFee * 100) / 100 -
+          Math.round(booking.amountToPay * 100) / 100,
+        paymentDeadline: deadlineDate,
+        eventDate: eventDate,
+        deposit: Math.round(booking.amountToPay * 100) / 100,
+        itemsSelected: booking?.itemsNeeded,
+        subject: `Catering Booking Confirmation - ${eventDate}`,
+        recepient: booking.email,
+        firstName: booking.name,
+        balancePaymentLink: booking.balancePaymentLink,
+      };
+      await confirmBookingEmail(bookingPayload);
+    }
+
+    if (booking?.paymentOption === 100) {
+      const bookingPayload = {
+        eventDate: eventDate,
+        deposit: Math.round(booking.amountToPay * 100) / 100,
+        itemsSelected: booking?.itemsNeeded,
+        subject: `Catering Booking Confirmation - ${eventDate}`,
+        recepient: booking.email,
+        firstName: booking.name,
+      };
+      await confirmFullPaymentBookingEmail(bookingPayload);
+    }
+  }
+
+
 }

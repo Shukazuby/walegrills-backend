@@ -141,6 +141,7 @@ export async function confirmBookingEmail(payload) {
           </p>
 
           <p>
+          <br />
             Best regards,<br />
             <strong>Zuby</strong><br />
             Wale Grills
@@ -278,6 +279,7 @@ export async function confirmFullPaymentBookingEmail(payload) {
           </p>
 
           <p>
+          <br />
             Warm regards,<br />
             <strong>Zuby</strong><br />
             Wale Grills
@@ -495,6 +497,7 @@ export async function PaymentReminderEmail(payload) {
           </p>
 
           <p>
+          <br />
             Best regards,<br />
             <strong>Zuby</strong><br />
             Wale Grills
@@ -510,20 +513,93 @@ export async function PaymentReminderEmail(payload) {
   await sendEmail(body, payload.subject, payload.recepient);
 }
 
-export async function calculatePaymentDeadline(
-  eventDateStr: string,
-): Promise<string> {
-  const eventDate = new Date(eventDateStr);
-  const deadlineDate = new Date(eventDate);
-  deadlineDate.setDate(eventDate.getDate() - 3);
+export async function confirmBookingBalance(payload) {
+ const body =
+ `
+ <!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Balance Payment Confirmation</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f1ed;
+        margin: 0;
+        padding: 0;
+        color: #4e3d36;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background-color: #fffaf5;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e3d9cf;
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e0d6ca;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+        color: #8b5e3c;
+      }
+      .tagline {
+        font-size: 14px;
+        color: #a78b73;
+      }
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e0d6ca;
+        font-size: 14px;
+        color: #7a5743;
+      }
+      .footer p {
+        margin: 4px 0;
+      }
+      .contact {
+        margin-top: 10px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Wale Grills</h1>
+        <div class="tagline">Every Occasion. Anywhere.</div>
+      </div>
 
-  const options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  };
+      <p>Dear ${payload.name},</p>
 
-  return deadlineDate.toLocaleDateString('en-GB', options);
+      <p>
+        We’re excited to let you know that we have received your balance payment of
+        <strong>£${payload.eventDate}</strong> for your event on <strong>${payload.eventDate}</strong>.
+      </p>
+
+      <p>
+        Your booking is now fully confirmed, and we're looking forward to making your event
+        deliciously unforgettable.
+      </p>
+
+      <div class="footer">
+        <p>Thank you once again for choosing Wale Grills.</p>
+        <br />
+        <p>Warm regards,<br /><strong>Zuby</strong><br />Wale Grills</p>
+        <p class="contact">Phone: +44 7951 952265</p>
+      </div>
+    </div>
+  </body>
+</html>
+
+ `
+    
+  await sendEmail(body, payload.subject, payload.recepient);
 }
 
 export async function confirmFoodBox(payload) {
@@ -640,6 +716,7 @@ export async function confirmFoodBox(payload) {
             </p>
   
             <p>
+            <br />
               Best regards,<br />
               <strong>Zuby</strong><br />
               Wale Grills
@@ -653,6 +730,22 @@ export async function confirmFoodBox(payload) {
   `;
   
   await sendEmail(body, payload.subject, payload.recepient);
+}
+
+export async function calculatePaymentDeadline(
+  eventDateStr: string,
+): Promise<string> {
+  const eventDate = new Date(eventDateStr);
+  const deadlineDate = new Date(eventDate);
+  deadlineDate.setDate(eventDate.getDate() - 3);
+
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  };
+
+  return deadlineDate.toLocaleDateString('en-GB', options);
 }
 
 export function formatDate(dateString) {
