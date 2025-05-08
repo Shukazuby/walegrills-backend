@@ -13,9 +13,9 @@ export class CronWork {
 
   private scheduleJobs() {
     cron.schedule('* * * * *', async () => {
-      console.log('🚀 Running scheduled job ...');
+      // console.log('🚀 Running scheduled job ...');
       await this.bookSrv.BalanceReminder();
-      console.log('created ...');
+      // console.log('created ...');
     });
   }
 }

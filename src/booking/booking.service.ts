@@ -246,6 +246,8 @@ export class BookingService {
 
       if (dto.paymentOption === 40) {
         booking.balancePaymentLink = session2.url;
+        booking.isHalfPayment = true;
+        booking.isBalanceReminder = false;
         await booking.save();
       }
 
