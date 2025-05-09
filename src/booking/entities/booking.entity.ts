@@ -39,7 +39,7 @@ export class Items {
   quantity: number;
 }
 
-@Schema()
+@Schema({ timestamps: true })
 export class Booking {
   @Prop()
   prefix: UserPrefix;

@@ -5,7 +5,7 @@ export enum ProductTypes {
   MEALPREP = 'mealprep',
 }
 
-@Schema()
+@Schema({ timestamps: true })
 export class Product {
   @Prop()
   name: string;
