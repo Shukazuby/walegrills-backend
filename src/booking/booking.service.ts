@@ -719,9 +719,7 @@ export class BookingService {
         booking.eventDate.toString(),
       );
       const bookingPayload = {
-        balance:
-          Math.round(booking.totalFee * 100) / 100 -
-          Math.round(booking.amountToPay * 100) / 100,
+        balance: Math.round((booking.totalFee - booking.amountToPay) * 100) / 100,
         paymentDeadline: deadlineDate,
         eventDate: eventDate,
         deposit: Math.round(booking.amountToPay * 100) / 100,
