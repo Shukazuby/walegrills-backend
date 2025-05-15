@@ -24,11 +24,8 @@ export class User {
 
   @Prop()
   status?: string;
-
-  @Prop({ default: new Date() })
+  
   createdAt: Date;
-
-  @Prop({ default: new Date() })
   updatedAt: Date;
 }
 

@@ -24,11 +24,8 @@ export class Product {
 
   @Prop({default: ProductTypes.GENERAL})
   productType?: ProductTypes;
-
-  @Prop({ default: new Date() })
+  
   createdAt: Date;
-
-  @Prop({ default: new Date() })
   updatedAt: Date;
 }
 

@@ -60,4 +60,13 @@ export class PaginationFilterDTO {
   })
   paymentStatus?: string;
 
+  @ApiProperty({
+    required: false,
+    description: 'Product Type',
+    type: String,
+    enum: ProductTypes
+
+  })
+  productType?: string;
+
 }

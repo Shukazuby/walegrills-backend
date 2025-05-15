@@ -22,7 +22,6 @@ export enum BookingFilter {
   PENDING = 'pending',
 }
 
-
 export class Items {
   @ApiProperty({
     example: '67fd3438ea2e860ce70d11b8',
@@ -81,10 +80,10 @@ export class Booking {
   @Prop()
   eventType?: string;
 
-  @Prop()
+  @Prop({ default: false })
   isHalfPayment?: boolean;
 
-  @Prop()
+  @Prop({ default: false })
   isBalanceReminder?: boolean;
 
   @Prop()
@@ -123,10 +122,7 @@ export class Booking {
   @Prop({ default: PaymentStatus.PENDING })
   paymentStatus?: PaymentStatus;
 
-  @Prop({ default: new Date() })
   createdAt: Date;
-
-  @Prop({ default: new Date() })
   updatedAt: Date;
 }
 

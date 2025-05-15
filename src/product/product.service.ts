@@ -10,10 +10,9 @@ import { Readable } from 'stream';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
 
 @Injectable()
 export class ProductService {
@@ -21,12 +20,18 @@ export class ProductService {
     @InjectModel(Product.name) private readonly productModel: Model<Product>,
   ) {}
 
-  async uploadFile(buffer: Buffer, folder = 'uploads'): Promise<UploadApiResponse> {
+  async uploadFile(
+    buffer: Buffer,
+    folder = 'uploads',
+  ): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream({ folder }, (err, result) => {
-        if (err) return reject(err);
-        resolve(result);
-      });
+      const stream = cloudinary.uploader.upload_stream(
+        { folder },
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        },
+      );
       Readable.from(buffer).pipe(stream);
     });
   }
@@ -34,14 +39,14 @@ export class ProductService {
   // async createProduct(dto: CreateProductDto, imageFile: Express.Multer.File): Promise<BaseResponseTypeDTO> {
   //   // Upload to Cloudinary
   //   const cloudinaryResult = await this.uploadFile(imageFile.buffer, 'products');
-  
+
   //   const product = new this.productModel({
   //     ...dto,
   //     imageurl: cloudinaryResult.secure_url,
   //   });
-  
+
   //   await product.save();
-  
+
   //   return {
   //     data: product,
   //     success: true,
@@ -49,7 +54,6 @@ export class ProductService {
   //     message: 'Product Created',
   //   };
   // }
-  
 
   async createProduct(dto: CreateProductDto): Promise<BaseResponseTypeDTO> {
     const product = new this.productModel({ ...dto });
@@ -63,7 +67,7 @@ export class ProductService {
   }
 
   async findAllProducts(
-    filters: IPaginationFilter,
+    filters: IPaginationFilter & { productType?: string },
   ): Promise<BaseResponseTypeDTO> {
     try {
       const searchFilter: any = {};
@@ -82,6 +86,14 @@ export class ProductService {
             return {};
           })
           .filter((condition) => Object.keys(condition).length > 0);
+      }
+
+      if (filters.productType === 'general') {
+        searchFilter.productType = 'general';
+      }
+
+      if (filters.productType === 'mealprep') {
+        searchFilter.productType = 'mealprep';
       }
 
       const limit = filters.limit || 100;

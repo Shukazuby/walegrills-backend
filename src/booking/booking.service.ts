@@ -234,7 +234,7 @@ export class BookingService {
       const booking = new this.bookingModel({
         ...dto,
         email,
-        totalFee,
+        totalFee: Math.round(totalFee * 100) / 100,
         amountToPay: Math.round(amountToPay * 100) / 100,
         serviceTime,
         invoiceNumber: invoiceNo,
@@ -242,6 +242,7 @@ export class BookingService {
         eventDate: new Date(dto.eventDate),
         balanceDue: Math.round(balanceDue * 100) / 100,
         itemsTotal,
+        isHalfPayment: false
       });
 
       if (dto.paymentOption === 40) {

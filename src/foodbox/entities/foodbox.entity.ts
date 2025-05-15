@@ -42,11 +42,8 @@ export class Foodbox {
 
   @Prop()
   deliveryAddress: string;
-
-  @Prop({ default: new Date() })
+  
   createdAt: Date;
-
-  @Prop({ default: new Date() })
   updatedAt: Date;
 }
 
