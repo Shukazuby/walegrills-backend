@@ -42,7 +42,13 @@ export class Foodbox {
 
   @Prop()
   deliveryAddress: string;
-  
+
+  @Prop({ ref: 'Admin' })
+  updatedByAdminId: string;
+
+  @Prop()
+  updatedBy?: string;
+
   createdAt: Date;
   updatedAt: Date;
 }

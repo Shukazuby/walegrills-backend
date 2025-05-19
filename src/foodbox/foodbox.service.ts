@@ -258,6 +258,9 @@ export class FoodboxService {
       }
 
       Object.assign(fooxdbox, dto);
+      fooxdbox.updatedBy = admin.firstName;
+      fooxdbox.updatedByAdminId = admin._id.toString();
+
       await fooxdbox.save();
 
       return {

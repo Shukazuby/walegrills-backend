@@ -122,6 +122,12 @@ export class Booking {
   @Prop({ default: PaymentStatus.PENDING })
   paymentStatus?: PaymentStatus;
 
+  @Prop({ ref: 'Admin' })
+  updatedByAdminId: string;
+
+  @Prop()
+  updatedBy?: string;
+
   createdAt: Date;
   updatedAt: Date;
 }

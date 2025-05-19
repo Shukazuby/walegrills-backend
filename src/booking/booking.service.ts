@@ -553,6 +553,8 @@ export class BookingService {
       }
 
       Object.assign(booking, dto);
+      booking.updatedBy = admin.firstName
+      booking.updatedByAdminId = admin._id.toString()
       await booking.save();
 
       return {
