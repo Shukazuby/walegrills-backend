@@ -51,6 +51,9 @@ export class Booking {
   email: string;
 
   @Prop()
+  serviceCharge: number;
+  
+  @Prop()
   numberOfGuests: number;
 
   @Prop()
@@ -109,6 +112,20 @@ export class Booking {
 
   @Prop()
   distance: number;
+
+  @Prop()
+  chefs: number;
+
+  @Prop()
+  waiters: number;
+  
+  @Prop()
+  equipment: number;
+  
+
+  @Prop()
+  transportation: number;
+  
 
   @Prop({ ref: 'User' })
   userId: string;
