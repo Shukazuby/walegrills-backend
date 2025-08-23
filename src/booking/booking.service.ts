@@ -95,12 +95,11 @@ export class BookingService {
 
       const res = await axios.get(url, {
         params: {
-          origins: origin, // make sure 'origin' is defined in your context
+          origins: origin, 
           destinations: destination,
           key: process.env.GOOGLE_API_KEY,
         },
       });
-
       const element = res.data.rows[0].elements[0];
 
       if (element.status !== 'OK') {
@@ -109,7 +108,7 @@ export class BookingService {
         );
       }
 
-      const distanceInMeters = element.distance.value; // meters
+      const distanceInMeters = element.distance.value; 
       const durationInSeconds = element.duration.value; // seconds
 
       const distanceInMiles = distanceInMeters / 1609.34;
@@ -123,6 +122,155 @@ export class BookingService {
       throw error;
     }
   }
+
+  async createBooking(dto: CreateBookingDto): Promise<BaseResponseTypeDTO> {
+  try {
+    await this.userSrv.createUser(dto);
+    const email = dto.email.toLowerCase();
+    const distance = await this.calculateDistance(dto.eventVenue);
+    const distanceHour = distance.duration;
+    const guests = dto.numberOfGuests;
+    let balanceDue = 0;
+    // const serviceTime = dto.serviceTime;
+
+    let chefRate = 0;
+    let waiterRate = 0;
+    const itemCount = dto.itemsNeeded.length;
+
+    const calculateEvent = await this.calculateEventCostss({
+      guestCount: guests,
+      menuItemCount: itemCount,
+      distanceInMiles: distance.distance,
+    });
+    // Staff rates
+    if (calculateEvent.serviceHours <= 5) {
+      chefRate = 18.5;
+      waiterRate = 12.5;
+    } else if (calculateEvent.serviceHours <= 10) {
+      chefRate = 20;
+      waiterRate = 13.5;
+    } else if (calculateEvent.serviceHours <= 15) {
+      chefRate = 22.5;
+      waiterRate = 14.5;
+    }
+
+    const chefCal = calculateEvent.chefs * chefRate;
+    const waiterCal = calculateEvent.waiters * waiterRate;
+
+    const chefCost = calculateEvent.serviceHours * chefCal;
+    const waiterCost = calculateEvent.serviceHours * waiterCal;
+
+    // Fetch product item costs
+    let itemsTotal = 0;
+    for (const item of dto.itemsNeeded || []) {
+      const product = await this.productModel.findById(item.productId).exec();
+      if (!product) {
+        throw new Error(`Product with ID ${item.productId} not found`);
+      }
+      itemsTotal += product.amount * item.quantity;
+    }
+
+    // Calculate total fee
+    const totalFee =
+      chefCost + waiterCost + calculateEvent.totalCost + itemsTotal;
+
+    let amountToPay =
+      chefCost + waiterCost + calculateEvent.totalCost + itemsTotal;
+    if (dto.paymentOption === 40) {
+      amountToPay = totalFee * 0.4;
+      balanceDue = totalFee - amountToPay;
+    }
+
+    // Stripe checkout
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      line_items: [
+        {
+          price_data: {
+            currency: 'gbp',
+            product_data: {
+              name: 'Event Booking',
+            },
+            unit_amount: Math.round(amountToPay * 100),
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: 'https://www.walegrills.com/thank-you',
+    });
+
+    const session2 = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      line_items: [
+        {
+          price_data: {
+            currency: 'gbp',
+            product_data: {
+              name: 'Event Booking',
+            },
+            unit_amount: Math.round(balanceDue * 100),
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: 'https://www.walegrills.com/thank-you',
+    });
+
+    const invoiceNo = await generateUniqueKey(7);
+    // Save to DB
+    const booking = new this.bookingModel({
+      ...dto,
+      email,
+      totalFee: Math.round(totalFee * 100) / 100,
+      amountToPay: Math.round(amountToPay * 100) / 100,
+      serviceTime: calculateEvent.serviceHours,
+      invoiceNumber: invoiceNo,
+      distance: distance.distance,
+      eventDate: new Date(dto.eventDate),
+      balanceDue: Math.round(balanceDue * 100) / 100,
+      itemsTotal,
+      isHalfPayment: false,
+      serviceCharge: calculateEvent.serviceCharge,
+      chefs: calculateEvent.chefs,
+      waiters: calculateEvent.waiters,
+      transportation: calculateEvent.transportCost,
+      equipment: calculateEvent.equipmentCost,
+    });
+
+    if (dto.paymentOption === 40) {
+      booking.balancePaymentLink = session2.url;
+      booking.isHalfPayment = true;
+      booking.isBalanceReminder = false;
+      await booking.save();
+    }
+
+    booking.sessionId = session?.id;
+    booking.balanceSessionId = session2?.id;
+    await booking.save();
+
+    const user = await this.userModel.findOne({ email });
+    if (user) {
+      booking.userId = user._id.toString();
+      await booking.save();
+    }
+    return {
+      data: {
+        stripePaymentId: session.id,
+        paymentLink: session.url,
+        booking,
+      },
+      success: true,
+      code: HttpStatus.CREATED,
+      message: 'Booking Initiated',
+    };
+  } catch (error) {
+    console.error('Booking creation failed:', error);
+    throw error;
+  }
+}
+
 
   // async createBooking(dto: CreateBookingDto): Promise<BaseResponseTypeDTO> {
   //   try {
@@ -315,153 +463,6 @@ export class BookingService {
   //   }
   // }
 
-  async createBooking(dto: CreateBookingDto): Promise<BaseResponseTypeDTO> {
-    try {
-      await this.userSrv.createUser(dto);
-      const email = dto.email.toLowerCase();
-      const distance = await this.calculateDistance(dto.eventVenue);
-      const distanceHour = distance.duration;
-      const guests = dto.numberOfGuests;
-      let balanceDue = 0;
-      // const serviceTime = dto.serviceTime;
-
-      let chefRate = 0;
-      let waiterRate = 0;
-      const itemCount = dto.itemsNeeded.length;
-
-      const calculateEvent = await this.calculateEventCostss({
-        guestCount: guests,
-        menuItemCount: itemCount,
-        distanceInMiles: distance.distance,
-      });
-      // Staff rates
-      if (calculateEvent.serviceHours <= 5) {
-        chefRate = 18.5;
-        waiterRate = 12.5;
-      } else if (calculateEvent.serviceHours <= 10) {
-        chefRate = 20;
-        waiterRate = 13.5;
-      } else if (calculateEvent.serviceHours <= 15) {
-        chefRate = 22.5;
-        waiterRate = 14.5;
-      }
-
-      const chefCal = calculateEvent.chefs * chefRate;
-      const waiterCal = calculateEvent.waiters * waiterRate;
-
-      const chefCost = calculateEvent.serviceHours * chefCal;
-      const waiterCost = calculateEvent.serviceHours * waiterCal;
-
-      // Fetch product item costs
-      let itemsTotal = 0;
-      for (const item of dto.itemsNeeded || []) {
-        const product = await this.productModel.findById(item.productId).exec();
-        if (!product) {
-          throw new Error(`Product with ID ${item.productId} not found`);
-        }
-        itemsTotal += product.amount * item.quantity;
-      }
-
-      // Calculate total fee
-      const totalFee =
-        chefCost + waiterCost + calculateEvent.totalCost + itemsTotal;
-
-      let amountToPay =
-        chefCost + waiterCost + calculateEvent.totalCost + itemsTotal;
-      if (dto.paymentOption === 40) {
-        amountToPay = totalFee * 0.4;
-        balanceDue = totalFee - amountToPay;
-      }
-
-      // Stripe checkout
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        mode: 'payment',
-        line_items: [
-          {
-            price_data: {
-              currency: 'gbp',
-              product_data: {
-                name: 'Event Booking',
-              },
-              unit_amount: Math.round(amountToPay * 100),
-            },
-            quantity: 1,
-          },
-        ],
-        success_url: 'https://www.walegrills.com/thank-you',
-      });
-
-      const session2 = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        mode: 'payment',
-        line_items: [
-          {
-            price_data: {
-              currency: 'gbp',
-              product_data: {
-                name: 'Event Booking',
-              },
-              unit_amount: Math.round(balanceDue * 100),
-            },
-            quantity: 1,
-          },
-        ],
-        success_url: 'https://www.walegrills.com/thank-you',
-      });
-
-      const invoiceNo = await generateUniqueKey(7);
-      // Save to DB
-      const booking = new this.bookingModel({
-        ...dto,
-        email,
-        totalFee: Math.round(totalFee * 100) / 100,
-        amountToPay: Math.round(amountToPay * 100) / 100,
-        serviceTime: calculateEvent.serviceHours,
-        invoiceNumber: invoiceNo,
-        distance: distance.distance,
-        eventDate: new Date(dto.eventDate),
-        balanceDue: Math.round(balanceDue * 100) / 100,
-        itemsTotal,
-        isHalfPayment: false,
-        serviceCharge: calculateEvent.serviceCharge,
-        chefs: calculateEvent.chefs,
-        waiters: calculateEvent.waiters,
-        transportation: calculateEvent.transportCost,
-        equipment: calculateEvent.equipmentCost,
-      });
-
-      if (dto.paymentOption === 40) {
-        booking.balancePaymentLink = session2.url;
-        booking.isHalfPayment = true;
-        booking.isBalanceReminder = false;
-        await booking.save();
-      }
-
-      booking.sessionId = session?.id;
-      booking.balanceSessionId = session2?.id;
-      await booking.save();
-
-      const user = await this.userModel.findOne({ email });
-      if (user) {
-        booking.userId = user._id.toString();
-        await booking.save();
-      }
-      return {
-        data: {
-          stripePaymentId: session.id,
-          paymentLink: session.url,
-          booking,
-        },
-        success: true,
-        code: HttpStatus.CREATED,
-        message: 'Booking Initiated',
-      };
-    } catch (error) {
-      console.error('Booking creation failed:', error);
-      throw error;
-    }
-  }
 
   async findAllBookings(
     filters: IPaginationFilter & {
