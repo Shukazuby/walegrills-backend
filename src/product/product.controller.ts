@@ -17,7 +17,14 @@ import {
   PaginationFilterDTO,
 } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ApiBody, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { BaseResponseTypeDTO } from 'src/utils';
 import { ProductTypes } from './entities/product.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -65,7 +72,7 @@ export class ProductController {
         description: { type: 'string', example: 'Yum and succlent' },
         productType: { type: 'string', enum: Object.values(ProductTypes) },
         category: { type: 'string', example: 'Main'},
-        imageUrl: {
+        image: {
           type: 'string',
           format: 'binary',
         },
