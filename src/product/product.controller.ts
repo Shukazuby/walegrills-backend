@@ -141,6 +141,44 @@ export class ProductController {
     return result;
   }
 
+  @Patch(':id/product/image')
+  @ApiOperation({ summary: 'Update a product' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Product update their account',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
+  })
+  @UseInterceptors(FileInterceptor('image'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', example: 'Chicken Wings(Feeds 45)' },
+        amount: { type: 'number',  format: 'float', example: 143.99},
+        description: { type: 'string', example: 'Yum and succlent' },
+        productType: { type: 'string', enum: Object.values(ProductTypes) },
+        category: { type: 'string', example: 'Main'},
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+      // required: ['name', 'amount', 'productType', 'category', 'image']
+    },
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() payload: UpdateProductDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ){
+    const result = await this.productService.update(id, payload, file);
+    return result;
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'delete product with a user' })
   @ApiResponse({

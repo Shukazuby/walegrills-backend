@@ -31,15 +31,46 @@ export class ProductService {
     return product.save();
   }
 
-  async createProduct(dto: CreateProductDto): Promise<BaseResponseTypeDTO> {
-    const product = new this.productModel({ ...dto });
-    await product.save();
-    return {
-      data: product,
-      success: true,
-      code: HttpStatus.CREATED,
-      message: 'Product Created',
-    };
+  async update(
+    productId: string,
+    payload: CreateProductDto,
+    file?: Express.Multer.File,
+  ): Promise<Product> {
+    const product = await this.productModel.findOne({ _id: productId });
+
+    if (!product) {
+      throw new NotFoundException(
+        `Product not found, therefore cannot be updated.`,
+      );
+    }
+
+    if ('name' in payload) {
+      product.name = payload.name;
+    }
+
+    if ('amount' in payload) {
+      product.amount = payload.amount;
+    }
+
+    if ('description' in payload) {
+      product.description = payload.description;
+    }
+
+    if ('category' in payload) {
+      product.category = payload.category;
+    }
+
+    if ('productType' in payload) {
+      product.productType = payload.productType;
+    }
+
+    if (file) {
+      const uploadResult = await this.cloudinaryService.uploadImage(file);
+      product.imageurl = uploadResult.url;
+    }
+    const updatedProduct = await product.save();
+
+    return updatedProduct.save();
   }
 
   async findAllProducts(
@@ -207,6 +238,26 @@ export class ProductService {
     }
   }
 
+  async deleteProduct(productId: string): Promise<BaseResponseTypeDTO> {
+    try {
+      const product = await this.productModel.findOne({ _id: productId });
+
+      if (!product) {
+        throw new NotFoundException(`Product not found.`);
+      }
+
+      await this.productModel.findByIdAndDelete(productId);
+
+      return {
+        success: true,
+        code: HttpStatus.OK,
+        message: 'Product Deleted',
+      };
+    } catch (ex) {
+      throw ex;
+    }
+  }
+
   async updateProduct(
     productId: string,
     payload: UpdateProductDto,
@@ -253,23 +304,14 @@ export class ProductService {
     }
   }
 
-  async deleteProduct(productId: string): Promise<BaseResponseTypeDTO> {
-    try {
-      const product = await this.productModel.findOne({ _id: productId });
-
-      if (!product) {
-        throw new NotFoundException(`Product not found.`);
-      }
-
-      await this.productModel.findByIdAndDelete(productId);
-
-      return {
-        success: true,
-        code: HttpStatus.OK,
-        message: 'Product Deleted',
-      };
-    } catch (ex) {
-      throw ex;
-    }
+  async createProduct(dto: CreateProductDto): Promise<BaseResponseTypeDTO> {
+    const product = new this.productModel({ ...dto });
+    await product.save();
+    return {
+      data: product,
+      success: true,
+      code: HttpStatus.CREATED,
+      message: 'Product Created',
+    };
   }
 }
