@@ -24,7 +24,7 @@ export enum BookingFilter {
 
 export class Items {
   @ApiProperty({
-    example: '67fd3438ea2e860ce70d11b8',
+    example: '68a981b2854ba2e48b0a2300',
     description: 'Product ID',
   })
   @IsString()
@@ -70,6 +70,12 @@ export class Booking {
 
   @Prop()
   eventStyle?: string;
+
+  @Prop()
+  dietaryres?: string;
+
+  @Prop()
+  cutleries?: string;
 
   @Prop()
   note?: string;
