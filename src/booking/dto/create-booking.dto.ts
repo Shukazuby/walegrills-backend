@@ -40,8 +40,11 @@ export class CreateBookingDto {
   @ApiProperty({example: 'Yes, please do not cook fish'})
   dietaryres?: string;
   
-  @ApiProperty({example: 'Yes, 100 disposable cups'})
+  @ApiProperty({example: 'yes'})
   cutleries?: string;
+
+  @ApiProperty({ example: 'cups, forks', description: 'items' })
+  cutleryItems: string;
   
   @ApiProperty({example: 'The Event Starts by 12pm'})
   note?: string;

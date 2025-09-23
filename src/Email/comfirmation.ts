@@ -113,9 +113,20 @@ export async function confirmBookingEmail(payload) {
         <h4>Event Details:</h4>
         <ul>
           <li><strong>Event Date:</strong> ${payload.eventDate}</li>
+          <li><strong>No. of Guests:</strong> ${payload.guests}</li>
+          <li><strong>Service Time:</strong> ${payload.servicetime}</li>
+          <li><strong>Serving Time:</strong> ${payload.servingtime}</li>
+          <li><strong>Staff Required:</strong> ${payload.staffrequired}</li>
+          <li><strong>Event Type:</strong> ${payload.type}</li>
+          <li><strong>Event Style:</strong> ${payload.eventStyle}</li>
+          <li><strong>Venue:</strong> ${payload.address}</li>
+          <li><strong>Cutlery:</strong> £${payload.cutlery}</li>
+          <li><strong>Cutlery Items:</strong> £${payload.cutleryItems}</li>
+          <li><strong>Dietary Restriction:</strong> £${payload.dietaryres}</li>
           <li><strong>Deposit Paid:</strong> £${payload.deposit}</li>
           <li><strong>Balance Due:</strong> £${payload.balance}</li>
           <li><strong>Payment Deadline:</strong> ${payload.paymentDeadline}</li>
+
         </ul>
 
         <h4>Your Selected Items:</h4>
@@ -260,6 +271,16 @@ export async function confirmFullPaymentBookingEmail(payload) {
         <h4>Event Summary:</h4>
         <ul>
           <li><strong>Event Date:</strong> ${payload.eventDate}</li>
+          <li><strong>No. of Guests:</strong> ${payload.guests}</li>
+          <li><strong>Service Time:</strong> ${payload.servicetime}</li>
+          <li><strong>Serving Time:</strong> ${payload.servingtime}</li>
+          <li><strong>Staff Required:</strong> ${payload.staffrequired}</li>
+          <li><strong>Event Type:</strong> ${payload.type}</li>
+          <li><strong>Event Style:</strong> ${payload.eventStyle}</li>
+          <li><strong>Venue:</strong> ${payload.address}</li>
+          <li><strong>Cutlery:</strong> £${payload.cutlery}</li>
+          <li><strong>Cutlery Items:</strong> £${payload.cutleryItems}</li>
+          <li><strong>Dietary Restriction:</strong> £${payload.dietaryres}</li>
           <li><strong>Total Paid:</strong> £${payload.deposit}</li>
         </ul>
 
@@ -475,9 +496,19 @@ export async function PaymentReminderEmail(payload) {
         <h4>Event Summary:</h4>
         <ul>
           <li><strong>Event Date:</strong> ${payload.eventDate}</li>
+          <li><strong>No. of Guests:</strong> ${payload.guests}</li>
+          <li><strong>Service Time:</strong> ${payload.servicetime}</li>
+          <li><strong>Serving Time:</strong> ${payload.servingtime}</li>
+          <li><strong>Staff Required:</strong> ${payload.staffrequired}</li>
+          <li><strong>Event Type:</strong> ${payload.type}</li>
+          <li><strong>Event Style:</strong> ${payload.eventStyle}</li>
+          <li><strong>Venue:</strong> ${payload.address}</li>
+          <li><strong>Cutlery:</strong> £${payload.cutlery}</li>
+          <li><strong>Cutlery Items:</strong> £${payload.cutleryItems}</li>
+          <li><strong>Dietary Restriction:</strong> £${payload.dietaryres}</li>
           <li><strong>Deposit Paid:</strong> £${payload.deposit}</li>
-          <li><strong>Remaining Balance:</strong> £${payload.balance}</li>
-          <li><strong>Payment Deadline:</strong> ${payload.deadline}</li>
+          <li><strong>Balance Due:</strong> £${payload.balance}</li>
+          <li><strong>Payment Deadline:</strong> ${payload.paymentDeadline}</li>
         </ul>
 
         <p>

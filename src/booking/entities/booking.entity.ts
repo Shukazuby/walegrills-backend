@@ -108,6 +108,9 @@ export class Booking {
   itemsNeeded: Items[];
 
   @Prop()
+  cutleryItems?: string;
+
+  @Prop()
   totalFee: number;
 
   @Prop()
