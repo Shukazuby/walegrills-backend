@@ -1,7 +1,18 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import * as Mailjet from 'node-mailjet';
 import * as dotenv from 'dotenv';
+import { BaseResponseTypeDTO } from 'src/utils';
+import { ApiProperty } from '@nestjs/swagger';
 dotenv.config();
+
+export class SendEmailDTO {
+  @ApiProperty({example: 'Hello Client, I hope this email finds you well'})
+  body: string;
+  @ApiProperty({example: 'Client profile'})
+  subject: string;
+  @ApiProperty({example: 'clientemail@examplr.com'})
+  email: string;
+}
 
 @Injectable()
 export class MailjetService {
@@ -52,6 +63,18 @@ export class MailjetService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+    async sendAnyEmail(payload: SendEmailDTO): Promise<BaseResponseTypeDTO> {
+    const body = `${payload.body}`;
+    await this.sendMail(body, payload.subject, [payload.email]);
+    // await sendEmail(body, payload.subject, payload.recepient);
+
+    return {
+      message: 'Message Sent',
+      success: true,
+      code: HttpStatus.OK,
+    };
   }
 
   async confirmBookingEmail(payload) {
@@ -219,7 +242,7 @@ export class MailjetService {
   </html>
 `;
 
-    await this.sendMail(body, payload.subject, payload.recepient);
+    await this.sendMail(body, payload.subject, [payload.recepient]);
   }
 
   async confirmFullPaymentBookingEmail(payload) {
@@ -367,7 +390,7 @@ export class MailjetService {
   </html>
 `;
 
-    await this.sendMail(body, payload.subject, payload.recepient);
+    await this.sendMail(body, payload.subject, [payload.recepient]);
   }
 
   async PaymentReminderEmail(payload) {
@@ -529,7 +552,7 @@ export class MailjetService {
   </html>
 `;
 
-    await this.sendMail(body, payload.subject, payload.recepient);
+    await this.sendMail(body, payload.subject, [payload.recepient]);
   }
 
   async confirmBookingBalance(payload) {
@@ -617,7 +640,7 @@ export class MailjetService {
 
  `;
 
-    await this.sendMail(body, payload.subject, payload.recepient);
+    await this.sendMail(body, payload.subject, [payload.recepient]);
   }
 
   async confirmFoodBox(payload) {
@@ -747,7 +770,7 @@ export class MailjetService {
     </html>
   `;
 
-    await this.sendMail(body, payload.subject, payload.recepient);
+    await this.sendMail(body, payload.subject, [payload.recepient]);
   }
 
   async calculatePaymentDeadline(eventDateStr: string): Promise<string> {

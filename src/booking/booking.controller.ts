@@ -16,11 +16,15 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BaseResponseTypeDTO } from 'src/utils';
 import { PaginationFilterDTO } from 'src/product/dto/create-product.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
+import { MailjetService, SendEmailDTO } from 'src/Email/mailjet';
 
 @ApiTags('Booking')
 @Controller('booking')
 export class BookingController {
-  constructor(private readonly bookingService: BookingService) {}
+  constructor(
+    private readonly bookingService: BookingService,
+    private readonly mailjetSrv: MailjetService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a Booking' })
@@ -135,4 +139,14 @@ export class BookingController {
     return result;
   }
 
+  @Post('send/email')
+  @ApiOperation({ summary: 'Send any email' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Email sent' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid input data',
+  })
+  async SendEmail(@Body() dto: SendEmailDTO): Promise<BaseResponseTypeDTO> {
+    return this.mailjetSrv.sendAnyEmail(dto);
+  }
 }
