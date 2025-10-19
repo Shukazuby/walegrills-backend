@@ -19,17 +19,18 @@ import {
 } from 'src/utils';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
-import {
-  calculatePaymentDeadline,
-  confirmBookingBalance,
-  confirmBookingEmail,
-  confirmFullPaymentBookingEmail,
-  formatDate,
-  PaymentReminderEmail,
-} from 'src/Email/comfirmation';
+// import {
+//   calculatePaymentDeadline,
+//   confirmBookingBalance,
+//   confirmBookingEmail,
+//   confirmFullPaymentBookingEmail,
+//   formatDate,
+//   PaymentReminderEmail,
+// } from 'src/Email/comfirmation';
 import { first } from 'rxjs';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Admin } from 'src/auth/entities/auth.entity';
+import { MailjetService } from 'src/Email/mailjet';
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ export class BookingService {
     @InjectModel(Admin.name) private readonly adminModel: Model<Admin>,
 
     private readonly userSrv: UsersService,
+    private readonly mailjetSrv: MailjetService,
   ) {}
 
   async calculateEventCostss({ guestCount, menuItemCount, distanceInMiles }) {
@@ -807,7 +809,7 @@ export class BookingService {
       await booking.save();
     }
 
-    const eventDate = formatDate(booking.eventDate);
+    const eventDate = this.mailjetSrv.formatDate(booking.eventDate);
 
     if (booking?.paymentOption === 40) {
       const bookingPayload = {
@@ -818,7 +820,7 @@ export class BookingService {
         recepient: booking.email,
         name: booking.name,
       };
-      await confirmBookingBalance(bookingPayload);
+      await this.mailjetSrv.confirmBookingBalance(bookingPayload);
     }
   }
 
@@ -834,10 +836,10 @@ export class BookingService {
       await booking.save();
     }
 
-    const eventDate = formatDate(booking.eventDate);
+    const eventDate = this.mailjetSrv.formatDate(booking.eventDate);
 
     if (booking?.paymentOption === 40) {
-      const deadlineDate = await calculatePaymentDeadline(
+      const deadlineDate = await this.mailjetSrv.calculatePaymentDeadline(
         booking.eventDate.toString(),
       );
       const bookingPayload = {
@@ -862,7 +864,7 @@ export class BookingService {
         cutleryItems: booking.cutleryItems,
         dietaryres: booking.dietaryres,
       };
-      await confirmBookingEmail(bookingPayload);
+      await this.mailjetSrv.confirmBookingEmail(bookingPayload);
     }
 
     if (booking?.paymentOption === 100) {
@@ -885,7 +887,7 @@ export class BookingService {
         dietaryres: booking.dietaryres,
 
       };
-      await confirmFullPaymentBookingEmail(bookingPayload);
+      await this.mailjetSrv.confirmFullPaymentBookingEmail(bookingPayload);
     }
   }
 
@@ -905,7 +907,7 @@ export class BookingService {
     if (!bookings || bookings.length === 0) return;
 
     for (const book of bookings) {
-      const deadlineDate = await calculatePaymentDeadline(
+      const deadlineDate = await this.mailjetSrv.calculatePaymentDeadline(
         book.eventDate.toString(),
       );
 
@@ -914,12 +916,12 @@ export class BookingService {
 
       if (isDue) {
         const bookingPayload = {
-          eventDate: formatDate(book.eventDate),
+          eventDate: this.mailjetSrv.formatDate(book.eventDate),
           deposit: Math.round(book.amountToPay * 100) / 100,
-          deadline: formatDate(deadlineDate),
+          deadline: this.mailjetSrv.formatDate(deadlineDate),
           balance: Math.round(book.balanceDue),
           itemsSelected: book?.itemsNeeded,
-          subject: `Balance Reminder: Complete Your Wale Grills Booking - ${formatDate(deadlineDate)}`,
+          subject: `Balance Reminder: Complete Your Wale Grills Booking - ${this.mailjetSrv.formatDate(deadlineDate)}`,
           recepient: book.email,
           firstName: book.name,
           balancePaymentLink: book.balancePaymentLink,
@@ -937,7 +939,7 @@ export class BookingService {
         };
         console.log('###############');
 
-        await PaymentReminderEmail(bookingPayload);
+        await this.mailjetSrv.PaymentReminderEmail(bookingPayload);
         console.log('*********');
         book.isBalanceReminder = true;
         book.updatedAt = new Date();

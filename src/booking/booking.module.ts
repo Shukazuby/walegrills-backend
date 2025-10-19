@@ -9,6 +9,7 @@ import { User, UserSchema } from 'src/users/entities/user.entity';
 import { UsersModule } from 'src/users/users.module';
 import { Admin, AdminSchema } from 'src/auth/entities/auth.entity';
 import { AuthModule } from 'src/auth/auth.module';
+import { MailjetService } from 'src/Email/mailjet';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { AuthModule } from 'src/auth/auth.module';
     forwardRef(() => AuthModule),
   ],
   controllers: [BookingController],
-  providers: [BookingService],
+  providers: [BookingService, MailjetService],
   exports: [BookingService],
 })
 export class BookingModule {}

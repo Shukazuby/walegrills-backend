@@ -11,6 +11,7 @@ import { Plan, PlanSchema } from 'src/plan/entities/plan.entity';
 import { PlanModule } from 'src/plan/plan.module';
 import { Admin, AdminSchema } from 'src/auth/entities/auth.entity';
 import { AuthModule } from 'src/auth/auth.module';
+import { MailjetService } from 'src/Email/mailjet';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { AuthModule } from 'src/auth/auth.module';
   ],
 
   controllers: [FoodboxController],
-  providers: [FoodboxService],
+  providers: [FoodboxService, MailjetService],
   exports: [FoodboxService],
 })
 export class FoodboxModule {}

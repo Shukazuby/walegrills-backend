@@ -16,6 +16,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { UsersService } from 'src/users/users.service';
 import { User, UserSchema } from 'src/users/entities/user.entity';
 import { UsersModule } from 'src/users/users.module';
+import { MailjetService } from 'src/Email/mailjet';
 
 @Module({
   imports: [
@@ -33,6 +34,6 @@ import { UsersModule } from 'src/users/users.module';
     forwardRef(() => UsersModule),
   ],
   controllers: [WebhookController],
-  providers: [FoodboxService, BookingService, UsersService],
+  providers: [FoodboxService, BookingService, UsersService, MailjetService],
 })
 export class WebhookModule {}

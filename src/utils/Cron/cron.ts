@@ -3,7 +3,6 @@ import { Model } from 'mongoose';
 import * as cron from 'node-cron';
 import { BookingService } from 'src/booking/booking.service';
 import { Booking } from 'src/booking/entities/booking.entity';
-import { confirmBookingEmail } from 'src/Email/comfirmation';
 
 @Injectable()
 export class CronWork {

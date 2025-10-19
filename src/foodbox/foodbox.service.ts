@@ -15,7 +15,7 @@ import { PlanService } from 'src/plan/plan.service';
 import { PaymentStatus } from 'src/booking/entities/booking.entity';
 import { Admin } from 'src/auth/entities/auth.entity';
 import { UpdateFoodboxDto } from './dto/update-foodbox.dto';
-import { confirmFoodBox, formatDate } from 'src/Email/comfirmation';
+import { MailjetService } from 'src/Email/mailjet';
 
 @Injectable()
 export class FoodboxService {
@@ -26,6 +26,7 @@ export class FoodboxService {
 
     private readonly userSrv: UsersService,
     private readonly planSrv: PlanService,
+    private readonly mailjetSrv: MailjetService,
   ) {}
 
   async createFoodbox(dto: CreateFoodboxDto): Promise<BaseResponseTypeDTO> {
@@ -314,14 +315,14 @@ export class FoodboxService {
     }
 
     const foodBoxPayload = {
-      deliveryDate: formatDate(foodbox.deliveryDate),
+      deliveryDate: this.mailjetSrv.formatDate(foodbox.deliveryDate),
       itemsSelected: foodbox?.itemsSelected,
-      subject: `We've Received Your Meal Choices - Delivery On ${formatDate(foodbox.deliveryDate)}`,
+      subject: `We've Received Your Meal Choices - Delivery On ${this.mailjetSrv.formatDate(foodbox.deliveryDate)}`,
       firstName: foodbox.name,
       recepient: foodbox.email,
       address: foodbox.deliveryAddress,
     };
 
-    await confirmFoodBox(foodBoxPayload);
+    await this.mailjetSrv.confirmFoodBox(foodBoxPayload);
   }
 }
