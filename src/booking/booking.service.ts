@@ -182,7 +182,7 @@ export class BookingService {
         chefCost + waiterCost + calculateEvent.totalCost + itemsTotal + cutleryFee;
 
       let amountToPay =
-        chefCost + waiterCost + calculateEvent.totalCost + itemsTotal;
+        chefCost + waiterCost + calculateEvent.totalCost + itemsTotal + cutleryFee;
       if (dto.paymentOption === 40) {
         amountToPay = totalFee * 0.4;
         balanceDue = totalFee - amountToPay;
