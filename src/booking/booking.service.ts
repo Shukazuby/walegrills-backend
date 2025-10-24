@@ -134,12 +134,11 @@ export class BookingService {
       const guests = dto.numberOfGuests;
       let balanceDue = 0;
       // const serviceTime = dto.serviceTime;
-
       let chefRate = 0;
       let waiterRate = 0;
       let cutleryFee = 0;
       const itemCount = dto.itemsNeeded.length;
-
+      
       const calculateEvent = await this.calculateEventCostss({
         guestCount: guests,
         menuItemCount: itemCount,
@@ -156,13 +155,13 @@ export class BookingService {
         chefRate = 22.5;
         waiterRate = 14.5;
       }
-
+      
       const chefCal = calculateEvent.chefs * chefRate;
       const waiterCal = calculateEvent.waiters * waiterRate;
-
+      
       const chefCost = calculateEvent.serviceHours * chefCal;
       const waiterCost = calculateEvent.serviceHours * waiterCal;
-
+      
       // Fetch product item costs
       let itemsTotal = 0;
       for (const item of dto.itemsNeeded || []) {
@@ -172,24 +171,24 @@ export class BookingService {
         }
         itemsTotal += product.amount * item.quantity;
       }
-
+      
       if (dto.cutleries === 'yes') {
         const guests = Number(dto.numberOfGuests) || 0; // number of guests
         const pricePerDisposable = 20 / 50; // £0.40 per disposable
         cutleryFee = guests * pricePerDisposable;
       }
-
+      
       // Calculate total fee
       const totalFee =
-        chefCost + waiterCost + calculateEvent.totalCost + itemsTotal + cutleryFee;
-
+      chefCost + waiterCost + calculateEvent.totalCost + itemsTotal + cutleryFee;
+      
       let amountToPay =
-        chefCost + waiterCost + calculateEvent.totalCost + itemsTotal + cutleryFee;
+      chefCost + waiterCost + calculateEvent.totalCost + itemsTotal + cutleryFee;
       if (dto.paymentOption === 40) {
         amountToPay = totalFee * 0.4;
         balanceDue = totalFee - amountToPay;
       }
-
+      
       // Stripe checkout
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -208,7 +207,7 @@ export class BookingService {
         ],
         success_url: 'https://www.walegrills.com/thank-you',
       });
-
+      
       const session2 = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         mode: 'payment',
@@ -226,7 +225,7 @@ export class BookingService {
         ],
         success_url: 'https://www.walegrills.com/thank-you',
       });
-
+      
       const invoiceNo = await generateUniqueKey(7);
       // Save to DB
       const booking = new this.bookingModel({
@@ -247,18 +246,18 @@ export class BookingService {
         transportation: calculateEvent.transportCost,
         equipment: calculateEvent.equipmentCost,
       });
-
+      
       if (dto.paymentOption === 40) {
         booking.balancePaymentLink = session2.url;
         booking.isHalfPayment = true;
         booking.isBalanceReminder = false;
         await booking.save();
       }
-
+      
       booking.sessionId = session?.id;
       booking.balanceSessionId = session2?.id;
       await booking.save();
-
+      
       const user = await this.userModel.findOne({ email });
       if (user) {
         booking.userId = user._id.toString();

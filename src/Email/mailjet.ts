@@ -355,9 +355,9 @@ export class MailjetService {
           <li><strong>Event Type:</strong> ${payload.type}</li>
           <li><strong>Event Style:</strong> ${payload.eventStyle}</li>
           <li><strong>Venue:</strong> ${payload.address}</li>
-          <li><strong>Cutlery:</strong> £${payload.cutlery}</li>
-          <li><strong>Cutlery Items:</strong> £${payload.cutleryItems}</li>
-          <li><strong>Dietary Restriction:</strong> £${payload.dietaryres}</li>
+          <li><strong>Cutlery:</strong> ${payload.cutlery}</li>
+          <li><strong>Cutlery Items:</strong> ${payload.cutleryItems}</li>
+          <li><strong>Dietary Restriction:</strong>${payload.dietaryres}</li>
           <li><strong>Total Paid:</strong> £${payload.deposit}</li>
         </ul>
 
@@ -620,7 +620,7 @@ export class MailjetService {
 
       <p>
         We’re excited to let you know that we have received your balance payment of
-        <strong>£${payload.eventDate}</strong> for your event on <strong>${payload.eventDate}</strong>.
+        <strong>${payload.eventDate}</strong> for your event on <strong>${payload.eventDate}</strong>.
       </p>
 
       <p>
